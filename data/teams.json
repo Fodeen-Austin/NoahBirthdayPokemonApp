@@ -1,0 +1,450 @@
+[
+  {
+    "id": "red",
+    "name": "Red",
+    "color": "#c62828",
+    "steps": [
+      {
+        "pokemon": "Charmander",
+        "image": "assets/pokemon/charmander.png",
+        "riddle": "Find the place where the sun makes the swings warm.",
+        "hint": "Look near the swing set.",
+        "code": "CHAR-HIT",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Charmander?",
+            "answer": "Fire."
+          },
+          {
+            "question": "Where does Charmander like to live?",
+            "answer": "Warm rocky areas."
+          },
+          {
+            "question": "What shows Charmander's health?",
+            "answer": "The flame on its tail."
+          }
+        ]
+      },
+      {
+        "pokemon": "Vulpix",
+        "image": "assets/pokemon/vulpix.png",
+        "riddle": "I love to curl up by the benches and watch the park.",
+        "hint": "Check the long bench.",
+        "code": "BENCH-1",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Vulpix?",
+            "answer": "Fire."
+          },
+          {
+            "question": "Where does Vulpix like to live?",
+            "answer": "Warm grassy fields and sunny hills."
+          },
+          {
+            "question": "What grows longer as Vulpix gets older?",
+            "answer": "Its fluffy tails."
+          }
+        ]
+      },
+      {
+        "pokemon": "Growlithe",
+        "image": "assets/pokemon/growlithe.png",
+        "riddle": "Where do dogs like to sniff and play?",
+        "hint": "Near the grassy field.",
+        "code": "FIELD-OK",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Growlithe?",
+            "answer": "Fire."
+          },
+          {
+            "question": "Where does Growlithe like to live?",
+            "answer": "Rocky fields."
+          },
+          {
+            "question": "What is Growlithe's weakness?",
+            "answer": "Water-type Pokemon."
+          }
+        ]
+      },
+      {
+        "pokemon": "Magmar",
+        "image": "assets/pokemon/magmar.png",
+        "riddle": "Find the spot that is hot in the sun and makes shadows.",
+        "hint": "Look for the tall tree.",
+        "code": "TREE-3",
+        "trivia": [
+          {
+            "question": "Where does Magmar live?",
+            "answer": "Volcanoes and hot caves."
+          },
+          {
+            "question": "What is Magmar's weakness?",
+            "answer": "Water-type Pokemon."
+          },
+          {
+            "question": "How does Magmar's body feel?",
+            "answer": "Always warm like a heater."
+          }
+        ]
+      },
+      {
+        "pokemon": "Charizard",
+        "image": "assets/pokemon/charizard.png",
+        "riddle": "Where can everyone see the whole park?",
+        "hint": "Find the highest point.",
+        "code": "HILL-5",
+        "trivia": [
+          {
+            "question": "What two types is Charizard?",
+            "answer": "Fire and Flying."
+          },
+          {
+            "question": "What is Charizard weak against?",
+            "answer": "Water and Electric."
+          },
+          {
+            "question": "What can Charizard do?",
+            "answer": "Fly high and breathe fire."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "blue",
+    "name": "Blue",
+    "color": "#1565c0",
+    "steps": [
+      {
+        "pokemon": "Squirtle",
+        "image": "assets/pokemon/squirtle.png",
+        "riddle": "I splash where the water meets the rocks.",
+        "hint": "Look by the fountain.",
+        "code": "SQUIRT-1",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Squirtle?",
+            "answer": "Water."
+          },
+          {
+            "question": "What does Squirtle do when it's scared?",
+            "answer": "Hides in its shell."
+          },
+          {
+            "question": "What are Squirtle's weaknesses?",
+            "answer": "Electric and Grass."
+          }
+        ]
+      },
+      {
+        "pokemon": "Psyduck",
+        "image": "assets/pokemon/psyduck.png",
+        "riddle": "I get confused near the path that curves.",
+        "hint": "Follow the winding path.",
+        "code": "PATH-2",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Psyduck?",
+            "answer": "Water."
+          },
+          {
+            "question": "What happens when Psyduck gets headaches?",
+            "answer": "It unlocks psychic power."
+          },
+          {
+            "question": "What is Psyduck's weakness?",
+            "answer": "Electric-type Pokemon."
+          }
+        ]
+      },
+      {
+        "pokemon": "Poliwag",
+        "image": "assets/pokemon/poliwag.png",
+        "riddle": "I spin and spin by the round thing.",
+        "hint": "Search near the roundabout.",
+        "code": "ROUND-OK",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Poliwag?",
+            "answer": "Water."
+          },
+          {
+            "question": "What helps Poliwag balance?",
+            "answer": "The swirl on its belly."
+          },
+          {
+            "question": "What are Poliwag's weaknesses?",
+            "answer": "Electric and Grass."
+          }
+        ]
+      },
+      {
+        "pokemon": "Seel",
+        "image": "assets/pokemon/seel.png",
+        "riddle": "I love the shade where the slide is cool.",
+        "hint": "Check the slide.",
+        "code": "SLIDE-4",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Seel?",
+            "answer": "Water."
+          },
+          {
+            "question": "What does Seel love to do on ice?",
+            "answer": "Slide like a sled."
+          },
+          {
+            "question": "What is Seel's weakness?",
+            "answer": "Electric-type Pokemon."
+          }
+        ]
+      },
+      {
+        "pokemon": "Gyarados",
+        "image": "assets/pokemon/gyarados.png",
+        "riddle": "Find the loudest place where kids cheer.",
+        "hint": "Near the big play set.",
+        "code": "PLAY-5",
+        "trivia": [
+          {
+            "question": "What two types is Gyarados?",
+            "answer": "Water and Flying."
+          },
+          {
+            "question": "What Pokemon does Gyarados evolve from?",
+            "answer": "Magikarp."
+          },
+          {
+            "question": "What can Gyarados create when it moves?",
+            "answer": "Huge waves."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "green",
+    "name": "Green",
+    "color": "#2e7d32",
+    "steps": [
+      {
+        "pokemon": "Bulbasaur",
+        "image": "assets/pokemon/bulbasaur.png",
+        "riddle": "I hide where the flowers like to grow.",
+        "hint": "Look in the garden.",
+        "code": "BULB-1",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Bulbasaur?",
+            "answer": "Grass."
+          },
+          {
+            "question": "What grows bigger on Bulbasaur's back?",
+            "answer": "Its bulb."
+          },
+          {
+            "question": "What is Bulbasaur's weakness?",
+            "answer": "Fire-type Pokemon."
+          }
+        ]
+      },
+      {
+        "pokemon": "Oddish",
+        "image": "assets/pokemon/oddish.png",
+        "riddle": "Find the patch that smells the nicest.",
+        "hint": "Smell the flowers.",
+        "code": "FLOWER-2",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Oddish?",
+            "answer": "Grass."
+          },
+          {
+            "question": "Where does Oddish live?",
+            "answer": "Forest soil."
+          },
+          {
+            "question": "What is Oddish's weakness?",
+            "answer": "Fire-type Pokemon."
+          }
+        ]
+      },
+      {
+        "pokemon": "Bellsprout",
+        "image": "assets/pokemon/bellsprout.png",
+        "riddle": "I stretch up near the tall green plants.",
+        "hint": "Look by the bushes.",
+        "code": "BUSH-OK",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Bellsprout?",
+            "answer": "Grass."
+          },
+          {
+            "question": "What does Bellsprout use to catch sunlight?",
+            "answer": "Its leaves."
+          },
+          {
+            "question": "What is Bellsprout's weakness?",
+            "answer": "Fire-type Pokemon."
+          }
+        ]
+      },
+      {
+        "pokemon": "Tangela",
+        "image": "assets/pokemon/tangela.png",
+        "riddle": "I tangle up where the vines hang.",
+        "hint": "Near the fence with vines.",
+        "code": "VINE-4",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Tangela?",
+            "answer": "Grass."
+          },
+          {
+            "question": "What covers Tangela's body?",
+            "answer": "Blue vines."
+          },
+          {
+            "question": "What helps protect Tangela?",
+            "answer": "Its vines."
+          }
+        ]
+      },
+      {
+        "pokemon": "Venusaur",
+        "image": "assets/pokemon/venusaur.png",
+        "riddle": "Find the spot with the biggest tree.",
+        "hint": "Look for the giant tree.",
+        "code": "TREE-5",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Venusaur?",
+            "answer": "Grass."
+          },
+          {
+            "question": "What big thing is on Venusaur's back?",
+            "answer": "A giant flower."
+          },
+          {
+            "question": "Where does Venusaur get its energy?",
+            "answer": "From the sun."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "yellow",
+    "name": "Yellow",
+    "color": "#f9a825",
+    "steps": [
+      {
+        "pokemon": "Pikachu",
+        "image": "assets/pokemon/pikachu.png",
+        "riddle": "I buzz where the lights are bright.",
+        "hint": "Look for the park lights.",
+        "code": "PIKA-1",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Pikachu?",
+            "answer": "Electric."
+          },
+          {
+            "question": "Where does Pikachu like to live?",
+            "answer": "Forests and grassy parks."
+          },
+          {
+            "question": "What does Pikachu store electricity in?",
+            "answer": "Its cheeks."
+          }
+        ]
+      },
+      {
+        "pokemon": "Eevee",
+        "image": "assets/pokemon/eevee.png",
+        "riddle": "I love to nap near the soft grassy hill.",
+        "hint": "Search the small hill.",
+        "code": "HILL-2",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Eevee?",
+            "answer": "Normal."
+          },
+          {
+            "question": "What makes Eevee special?",
+            "answer": "It can evolve into many different Pokemon."
+          },
+          {
+            "question": "What is Eevee's weakness?",
+            "answer": "Fighting-type Pokemon."
+          }
+        ]
+      },
+      {
+        "pokemon": "Jolteon",
+        "image": "assets/pokemon/jolteon.png",
+        "riddle": "Find the place that crackles when the wind blows.",
+        "hint": "Check the metal fence.",
+        "code": "FENCE-OK",
+        "trivia": [
+          {
+            "question": "What type of Pokemon is Jolteon?",
+            "answer": "Electric."
+          },
+          {
+            "question": "What Pokemon does Jolteon evolve from?",
+            "answer": "Eevee."
+          },
+          {
+            "question": "What can Jolteon's fur do?",
+            "answer": "Spark electricity."
+          }
+        ]
+      },
+      {
+        "pokemon": "Raichu",
+        "image": "assets/pokemon/raichu.png",
+        "riddle": "I run fast around the track.",
+        "hint": "Follow the running track.",
+        "code": "TRACK-4",
+        "trivia": [
+          {
+            "question": "What Pokemon does Raichu evolve from?",
+            "answer": "Pikachu."
+          },
+          {
+            "question": "What is Raichu's weakness?",
+            "answer": "Ground-type Pokemon."
+          },
+          {
+            "question": "What helps Raichu balance?",
+            "answer": "Its long tail."
+          }
+        ]
+      },
+      {
+        "pokemon": "Zapdos",
+        "image": "assets/pokemon/zapdos.png",
+        "riddle": "Find the loudest cheer spot near the pavilion.",
+        "hint": "Near the pavilion.",
+        "code": "PAVIL-5",
+        "trivia": [
+          {
+            "question": "What two types is Zapdos?",
+            "answer": "Electric and Flying."
+          },
+          {
+            "question": "Where does Zapdos like to live?",
+            "answer": "Storm clouds and high mountains."
+          },
+          {
+            "question": "What does Zapdos create with its wings?",
+            "answer": "Lightning storms."
+          }
+        ]
+      }
+    ]
+  }
+]

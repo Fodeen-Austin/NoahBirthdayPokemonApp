@@ -1,0 +1,10 @@
+{
+  "appTitle": "Noah's Birthday Pokemon Quest",
+  "maxSteps": 5,
+  "instantAppId": "c3ff5491-db2a-4c19-a43b-15a56d52ed8a",
+  "finalClue": {
+    "title": "Legendary Pokemon Appeared!",
+    "riddle": "Mewtwo is attempting to clone the parents, get back to the Pavillion now!",
+    "image": "./assets/pokemon/mewtwo.png"
+  }
+}

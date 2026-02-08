@@ -1,0 +1,123 @@
+[
+  {
+    "id": "q01",
+    "type": "description",
+    "prompt": "I am yellow, electric, and Ash's best friend.",
+    "options": ["Pikachu", "Squirtle", "Eevee", "Meowth"],
+    "answer": "Pikachu"
+  },
+  {
+    "id": "q02",
+    "type": "description",
+    "prompt": "I have a flame on my tail and I love to be warm.",
+    "options": ["Charmander", "Bulbasaur", "Jigglypuff", "Pidgey"],
+    "answer": "Charmander"
+  },
+  {
+    "id": "q03",
+    "type": "description",
+    "prompt": "I carry a plant bulb on my back.",
+    "options": ["Bulbasaur", "Psyduck", "Abra", "Geodude"],
+    "answer": "Bulbasaur"
+  },
+  {
+    "id": "q04",
+    "type": "description",
+    "prompt": "I sleep a lot and I am very, very big.",
+    "options": ["Snorlax", "Magikarp", "Machop", "Rattata"],
+    "answer": "Snorlax"
+  },
+  {
+    "id": "q05",
+    "type": "description",
+    "prompt": "I look like a small turtle and I spray water.",
+    "options": ["Squirtle", "Seel", "Vulpix", "Oddish"],
+    "answer": "Squirtle"
+  },
+  {
+    "id": "q06",
+    "type": "image",
+    "prompt": "Guess the Pokemon from the picture.",
+    "options": ["Eevee", "Pikachu", "Jolteon", "Meowth"],
+    "answer": "Eevee",
+    "image": "./assets/trivia/eevee.png"
+  },
+  {
+    "id": "q07",
+    "type": "image",
+    "prompt": "Guess the Pokemon from the picture.",
+    "options": ["Gengar", "Gastly", "Haunter", "Abra"],
+    "answer": "Gastly",
+    "image": "./assets/trivia/gastly.png"
+  },
+  {
+    "id": "q08",
+    "type": "description",
+    "prompt": "I sing a sleepy song with a microphone.",
+    "options": ["Jigglypuff", "Clefairy", "Chansey", "Ditto"],
+    "answer": "Jigglypuff"
+  },
+  {
+    "id": "q09",
+    "type": "description",
+    "prompt": "I am a fast bird that loves to fly.",
+    "options": ["Pidgey", "Zubat", "Sandshrew", "Caterpie"],
+    "answer": "Pidgey"
+  },
+  {
+    "id": "q10",
+    "type": "description",
+    "prompt": "I am a tiny mouse that stores electricity in my cheeks.",
+    "options": ["Pikachu", "Raichu", "Magnemite", "Voltorb"],
+    "answer": "Pikachu"
+  },
+  {
+    "id": "q11",
+    "type": "description",
+    "prompt": "I am a fire Pokemon with many fluffy tails that grow longer.",
+    "options": ["Vulpix", "Pikachu", "Oddish", "Seel"],
+    "answer": "Vulpix"
+  },
+  {
+    "id": "q12",
+    "type": "description",
+    "prompt": "I am a water Pokemon with a swirl on my belly that helps me balance.",
+    "options": ["Poliwag", "Squirtle", "Pidgey", "Bellsprout"],
+    "answer": "Poliwag"
+  },
+  {
+    "id": "q13",
+    "type": "description",
+    "prompt": "I love sliding on ice like a sled and live in cold oceans.",
+    "options": ["Seel", "Gyarados", "Jigglypuff", "Tangela"],
+    "answer": "Seel"
+  },
+  {
+    "id": "q14",
+    "type": "description",
+    "prompt": "I am a fierce Pokemon that evolves from Magikarp and makes huge waves.",
+    "options": ["Gyarados", "Zapdos", "Raichu", "Machop"],
+    "answer": "Gyarados"
+  },
+  {
+    "id": "q15",
+    "type": "description",
+    "prompt": "I am a grass Pokemon that sways like I'm dancing and uses my leaves to catch sunlight.",
+    "options": ["Bellsprout", "Bulbasaur", "Caterpie", "Psyduck"],
+    "answer": "Bellsprout"
+  },
+  {
+    "id": "q16",
+    "type": "description",
+    "prompt": "I am covered in blue vines that protect me and hide my eyes.",
+    "options": ["Tangela", "Oddish", "Meowth", "Growlithe"],
+    "answer": "Tangela"
+  },
+  {
+    "id": "q17",
+    "type": "description",
+    "prompt": "I am a legendary bird that makes lightning storms with my wings.",
+    "options": ["Zapdos", "Pidgey", "Jolteon", "Charizard"],
+    "answer": "Zapdos"
+  }
+]
