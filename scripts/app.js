@@ -457,17 +457,22 @@ function renderTeamScreen() {
       ${statusIndicatorMarkup()}
       <div class="step-grid">
         <div class="card team-card ${teamData.id} step-main">
-          <h1 class="title">${teamData.name} Team</h1>
-          <p class="muted">Step ${stepIndex + 1} of ${state.maxSteps}</p>
-          <div class="pill">Pokemon: ${stepData.pokemon}</div>
-          ${
-            stepData.image
-              ? `<img class="pokemon-image" src="${stepData.image}" alt="${stepData.pokemon}" />`
-              : ""
-          }
-          <div class="spacer"></div>
-          <p>${stepData.riddle}</p>
-          ${stepData.hint ? `<p class="muted">Hint: ${stepData.hint}</p>` : ""}
+          <div class="step-main-header">
+            <div class="step-main-text">
+              <h1 class="title">${teamData.name} Team</h1>
+              <p class="muted">Step ${stepIndex + 1} of ${state.maxSteps}</p>
+              <div class="pill">Pokemon: ${stepData.pokemon}</div>
+            </div>
+            ${
+              stepData.image
+                ? `<img class="pokemon-image" src="${stepData.image}" alt="${stepData.pokemon}" />`
+                : ""
+            }
+          </div>
+          <div class="step-main-clue">
+            <p>${stepData.riddle}</p>
+            ${stepData.hint ? `<p class="muted">Hint: ${stepData.hint}</p>` : ""}
+          </div>
         </div>
         <div class="step-trivia">
           ${triviaMarkup}

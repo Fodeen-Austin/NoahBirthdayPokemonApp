@@ -74,6 +74,42 @@
   border-left-color: #f9a825;
 }
 
+.step-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step-main-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.step-main-text {
+  flex: 1 1 200px;
+  text-align: left;
+}
+
+.step-main .title {
+  text-align: center;
+}
+
+.step-main-clue {
+  margin-top: auto;
+  text-align: left;
+}
+
+.step-main-clue p {
+  margin: 0 0 8px;
+}
+
+.step-main-clue p:last-child {
+  margin-bottom: 0;
+}
+
 .option-grid {
   display: grid;
   gap: 10px;
@@ -81,8 +117,8 @@
 
 .pokemon-image {
   display: block;
-  width: min(280px, 85%);
-  margin: 14px auto 0;
+  width: min(180px, 42vw);
+  margin: 0;
   border-radius: 20px;
   background: #f5f6ff;
   box-shadow: var(--shadow-soft);
@@ -110,6 +146,6 @@
   }
 
   .pokemon-image {
-    width: min(240px, 90%);
+    width: min(160px, 60vw);
   }
 }

@@ -119,6 +119,18 @@ body {
     padding: 16px;
     border-radius: 20px;
   }
+
+  .step-trivia .card {
+    padding: 14px;
+  }
+
+  .step-trivia h3 {
+    margin: 0 0 8px;
+  }
+
+  .step-trivia p {
+    margin: 6px 0;
+  }
 }
 
 .title {
