@@ -95,12 +95,64 @@ body {
   grid-area: trivia;
 }
 
-.step-trivia h3 {
-  margin: 0 0 8px;
+.step-trivia details {
+  width: 100%;
 }
 
-.step-trivia p {
+.step-trivia summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 14px;
+  margin: -18px -20px 0;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-trivia summary:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.step-trivia summary::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 6px solid var(--muted);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.step-trivia details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.step-trivia summary::-webkit-details-marker {
+  display: none;
+}
+
+.step-trivia details[open] summary {
+  margin-bottom: 4px;
+  border-radius: 16px 16px 0 0;
+}
+
+.step-trivia-content {
+  margin-top: 0;
+}
+
+.step-trivia-content p {
   margin: 6px 0;
+}
+
+.step-trivia-content p:first-child {
+  margin-top: 0;
 }
 
 .station-info-tile {

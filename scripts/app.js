@@ -676,15 +676,19 @@ function renderStationScreen() {
 
   const triviaMarkup = displayPokemon.trivia?.length
     ? `
-      <div class="card step-trivia">
-        <h3>Trivia (Read Aloud)</h3>
-        ${displayPokemon.trivia
-          .map(
-            (item, index) =>
-              `<p><strong>Q${index + 1}:</strong> ${escapeHtml(item.question)}<br /><strong>A:</strong> ${escapeHtml(item.answer)}</p>`
-          )
-          .join("")}
-      </div>
+    <div class="card step-trivia">
+      <details>
+        <summary>Trivia (Read Aloud)</summary>
+        <div class="step-trivia-content">
+          ${displayPokemon.trivia
+            .map(
+              (item, index) =>
+                `<p><strong>Q${index + 1}:</strong> ${escapeHtml(item.question)}<br /><strong>A:</strong> ${escapeHtml(item.answer)}</p>`
+            )
+            .join("")}
+        </div>
+      </details>
+    </div>
     `
     : "";
 

@@ -145,7 +145,21 @@
     font-size: 0.95rem;
   }
 
+  .step-main-header {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .step-main-text {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
   .pokemon-image {
-    width: min(160px, 60vw);
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
+    flex-shrink: 0;
   }
 }
