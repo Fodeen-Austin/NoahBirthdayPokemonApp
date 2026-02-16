@@ -46,7 +46,9 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   grid-template-areas:
-    "main trivia"
+    "pokemon trivia"
+    "station-info station-info"
+    "find-the-code find-the-code"
     "code-entry code-clue";
   gap: 16px;
   align-items: stretch;
@@ -57,13 +59,127 @@ body {
   height: 100%;
 }
 
-.step-main {
-  grid-area: main;
+.step-main,
+.step-pokemon {
+  grid-area: pokemon;
+}
+
+.step-riddle {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border);
+}
+
+.step-riddle-label {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.step-riddle-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.step-next-battle-msg {
+  margin: 8px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .step-trivia {
   grid-area: trivia;
+}
+
+.step-trivia h3 {
+  margin: 0 0 8px;
+}
+
+.step-trivia p {
+  margin: 6px 0;
+}
+
+.station-info-tile {
+  grid-area: station-info;
+}
+
+.station-info-tile ol {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.station-info-tile p {
+  margin: 8px 0 0;
+}
+
+.station-info-tile p:first-child {
+  margin-top: 0;
+}
+
+.find-the-code-section {
+  grid-area: find-the-code;
+}
+
+.find-the-code-section details {
+  width: 100%;
+}
+
+.find-the-code-section summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 14px;
+  margin: -18px -20px 0;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--card-border);
   display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.find-the-code-section summary:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.find-the-code-section summary::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 6px solid var(--muted);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.find-the-code-section details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.find-the-code-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.find-the-code-section details[open] summary {
+  margin-bottom: 4px;
+  border-radius: 16px 16px 0 0;
+}
+
+.find-the-code-section .find-the-code-poem {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.find-the-code-section .find-the-code-poem + p {
+  margin: 8px 0 0;
 }
 
 .step-code-entry {
@@ -96,8 +212,10 @@ body {
   .step-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "main"
+      "pokemon"
       "trivia"
+      "station-info"
+      "find-the-code"
       "code-entry"
       "code-clue";
     gap: 12px;
@@ -120,17 +238,6 @@ body {
     border-radius: 20px;
   }
 
-  .step-trivia .card {
-    padding: 14px;
-  }
-
-  .step-trivia h3 {
-    margin: 0 0 8px;
-  }
-
-  .step-trivia p {
-    margin: 6px 0;
-  }
 }
 
 .title {

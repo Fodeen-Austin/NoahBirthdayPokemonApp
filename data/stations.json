@@ -1,0 +1,139 @@
+[
+  {
+    "id": "A",
+    "name": "Power Throw Challenge",
+    "zone": "Playground",
+    "themeType": "Fire / Strength",
+    "pokemon": "Charmander",
+    "image": "/assets/pokemon/charmander.png",
+    "clue": "Find the place where the sun makes the swings warm — near the climbing structure or safe open edge.",
+    "riddle": "A fiery Pokémon loves to train,\nWhere kids climb high and swing again.\nWhere ladders, bars, and slides all stay,\nThat's where today's big battle will play!",
+    "code": "CHAR-HIT",
+    "setup": "Pokémon cutout/foam board, large velcro/sticky target area (big enough to hit), 3–4 soft Poké tennis balls.",
+    "howToPlay": [
+      "Parent reads the riddle/clue.",
+      "Kids find the target.",
+      "Each child takes 1–2 throws.",
+      "Team needs 3 total hits to win."
+    ],
+    "winCondition": "3 hits on target",
+    "reset": "Pick up balls, confirm target is upright.",
+    "parentTip": "Make target generous — success early keeps momentum high.",
+    "findCodePoem": "You've trained hard and thrown with might,\nBut the code is hiding out of sight!\nLook where your Poké Balls came to rest,\nSomething nearby hides the final test!",
+    "findCodeParentHint": "Look on the back of the target board.",
+    "trivia": [
+      {"question": "What type of Pokemon is Charmander?", "answer": "Fire."},
+      {"question": "Where does Charmander like to live?", "answer": "Warm rocky areas."},
+      {"question": "What shows Charmander's health?", "answer": "The flame on its tail."}
+    ]
+  },
+  {
+    "id": "B",
+    "name": "Water Transfer Relay",
+    "zone": "Water feature area",
+    "themeType": "Water",
+    "pokemon": "Squirtle",
+    "image": "/assets/pokemon/squirtle.png",
+    "clue": "I splash where the water meets the rocks — find the safe area near the water feature.",
+    "riddle": "Some Pokémon splash and swim,\nWith fins and tails that help them win.\nFind the place where water flows,\nAnd tiny waves tickle your toes!",
+    "code": "SQUIRT-1",
+    "setup": "Option A (Water): 1 bucket filled with water + 1 empty bucket, 1 cup per kid, mark a fill line on the empty bucket. Option B (No Water): Use blue balls/bean bags moved bucket-to-bucket.",
+    "howToPlay": [
+      "Kids line up.",
+      "One at a time, they scoop/transfer and run it to the empty bucket.",
+      "Keep going until the empty bucket reaches the fill line (or transfers all balls)."
+    ],
+    "winCondition": "Bucket reaches the fill line (or transfers all balls)",
+    "reset": "Refill/return items.",
+    "parentTip": "Stay a safe distance from slippery edges.",
+    "findCodePoem": "Splash and pour, you did your part,\nBut finding the code is the smartest art!\nWhere the water once was deep,\nFlip it over — the secret you'll keep!",
+    "findCodeParentHint": "Flip the now empty bucket.",
+    "trivia": [
+      {"question": "What type of Pokemon is Squirtle?", "answer": "Water."},
+      {"question": "What does Squirtle do when it's scared?", "answer": "Hides in its shell."},
+      {"question": "What are Squirtle's weaknesses?", "answer": "Electric and Grass."}
+    ]
+  },
+  {
+    "id": "C",
+    "name": "Leaf Path Balance",
+    "zone": "Trees / wooded edge",
+    "themeType": "Grass",
+    "pokemon": "Bulbasaur",
+    "image": "/assets/pokemon/bulbasaur.png",
+    "clue": "Find the shaded trees where the leaf pads create a path across the grass.",
+    "riddle": "Grass Pokémon love the shade,\nWhere leafy homes and roots are made.\nBeneath tall trees where branches sway,\nA forest challenge waits today!",
+    "code": "BULB-1",
+    "setup": "8–12 foam pads/paper plates as leaf pads, placed across the grass to create a path.",
+    "howToPlay": [
+      "Kids must cross from start to finish stepping only on pads.",
+      "If someone steps off, team restarts (keep it playful)."
+    ],
+    "winCondition": "Entire team crosses successfully",
+    "reset": "None — just reattempt",
+    "parentTip": null,
+    "findCodePoem": "You crossed the forest safe and sound,\nNow the code must still be found!\nLook for a leaf that doesn't belong,\nA forest secret won't hide long!",
+    "findCodeParentHint": "Fake paper leaf hanging from nearby tree - Kids might need to look up.",
+    "trivia": [
+      {"question": "What type of Pokemon is Bulbasaur?", "answer": "Grass."},
+      {"question": "What grows bigger on Bulbasaur's back?", "answer": "Its bulb."},
+      {"question": "What is Bulbasaur's weakness?", "answer": "Fire-type Pokemon."}
+    ]
+  },
+  {
+    "id": "D",
+    "name": "Electric Freeze Dash",
+    "zone": "Open field",
+    "themeType": "Electric",
+    "pokemon": "Pikachu",
+    "image": "/assets/pokemon/pikachu.png",
+    "clue": "Find the wide open space where you can dance and freeze when the music stops!",
+    "riddle": "When lightning sparks and thunder booms,\nElectric Pokémon zoom and zoom!\nFind the place that's wide and free,\nWith room to dance like Pikachu and me!",
+    "code": "PIKA-1",
+    "setup": "Phone + music, cones marking boundary.",
+    "howToPlay": [
+      "Start music: kids dance/run inside the boundary.",
+      "Pause music and call ZAP! — everyone freezes.",
+      "Anyone moving does 3 jumping jacks, then keep going.",
+      "Complete 2 successful freeze rounds."
+    ],
+    "winCondition": "2 successful freeze rounds",
+    "reset": "None",
+    "parentTip": null,
+    "findCodePoem": "You froze like lightning — quick and bright!\nBut the code is still out of sight!\nWhere the music made you move your feet,\nLook underneath for your electric treat!",
+    "findCodeParentHint": "Lifts speaker.",
+    "musicLink": "https://music.apple.com/us/song/pok%C3%A9mon-theme/1833899281",
+    "trivia": [
+      {"question": "What type of Pokemon is Pikachu?", "answer": "Electric."},
+      {"question": "Where does Pikachu like to live?", "answer": "Forests and grassy parks."},
+      {"question": "What does Pikachu store electricity in?", "answer": "Its cheeks."}
+    ]
+  },
+  {
+    "id": "E",
+    "name": "Memory Match Battle",
+    "zone": "Benches / pavilion edge",
+    "themeType": "Mixed / Strategy",
+    "pokemon": "Vulpix",
+    "image": "/assets/pokemon/vulpix.png",
+    "clue": "Find the bench, picnic table, or pavilion edge where the cards are waiting.",
+    "riddle": "Some Pokémon are calm and wise,\nThey think before they strategize.\nFind a place where people sit,\nA quiet spot to use your wit!",
+    "code": "BENCH-1",
+    "setup": "8 Pokémon cards face down, 4 matching pairs.",
+    "howToPlay": [
+      "Kids take turns flipping two cards.",
+      "Keep matches; missed matches flip back.",
+      "Finish when all pairs are found."
+    ],
+    "winCondition": "All pairs found",
+    "reset": "Shuffle and lay face down again",
+    "parentTip": null,
+    "findCodePoem": "You matched them all with brainy might,\nNow search nearby — but keep it tight!\nWhere thinkers sit and puzzles are played,\nThe final numbers have been laid!",
+    "findCodeParentHint": "Taped under bench / table.",
+    "trivia": [
+      {"question": "What type of Pokemon is Vulpix?", "answer": "Fire."},
+      {"question": "Where does Vulpix like to live?", "answer": "Warm grassy fields and sunny hills."},
+      {"question": "What grows longer as Vulpix gets older?", "answer": "Its fluffy tails."}
+    ]
+  }
+]

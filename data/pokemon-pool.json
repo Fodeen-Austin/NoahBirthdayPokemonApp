@@ -1,0 +1,152 @@
+[
+  {
+    "id": "charmander",
+    "name": "Charmander",
+    "image": "/assets/pokemon/charmander.png",
+    "trivia": [
+      { "question": "What type of Pokemon is Charmander?", "answer": "Fire." },
+      { "question": "Where does Charmander like to live?", "answer": "Warm rocky areas." },
+      { "question": "What shows Charmander's health?", "answer": "The flame on its tail." }
+    ]
+  },
+  {
+    "id": "squirtle",
+    "name": "Squirtle",
+    "image": "/assets/pokemon/squirtle.png",
+    "trivia": [
+      { "question": "What type of Pokemon is Squirtle?", "answer": "Water." },
+      { "question": "What does Squirtle do when it's scared?", "answer": "Hides in its shell." },
+      { "question": "What are Squirtle's weaknesses?", "answer": "Electric and Grass." }
+    ]
+  },
+  {
+    "id": "bulbasaur",
+    "name": "Bulbasaur",
+    "image": "/assets/pokemon/bulbasaur.png",
+    "trivia": [
+      { "question": "What type of Pokemon is Bulbasaur?", "answer": "Grass." },
+      { "question": "What grows bigger on Bulbasaur's back?", "answer": "Its bulb." },
+      { "question": "What is Bulbasaur's weakness?", "answer": "Fire-type Pokemon." }
+    ]
+  },
+  {
+    "id": "pikachu",
+    "name": "Pikachu",
+    "image": "/assets/pokemon/pikachu.png",
+    "trivia": [
+      { "question": "What type of Pokemon is Pikachu?", "answer": "Electric." },
+      { "question": "Where does Pikachu like to live?", "answer": "Forests and grassy parks." },
+      { "question": "What does Pikachu store electricity in?", "answer": "Its cheeks." }
+    ]
+  },
+  {
+    "id": "vulpix",
+    "name": "Vulpix",
+    "image": "/assets/pokemon/vulpix.png",
+    "trivia": [
+      { "question": "What type of Pokemon is Vulpix?", "answer": "Fire." },
+      { "question": "Where does Vulpix like to live?", "answer": "Warm grassy fields and sunny hills." },
+      { "question": "What grows longer as Vulpix gets older?", "answer": "Its fluffy tails." }
+    ]
+  },
+  {
+    "id": "eevee",
+    "name": "Eevee",
+    "image": "/assets/pokemon/eeveesilhouette.png",
+    "trivia": [
+      { "question": "Why is Eevee special?", "answer": "It can evolve into many different types." },
+      { "question": "What is Eevee's fur like?", "answer": "Brown and fluffy." },
+      { "question": "What does Eevee's tail look like?", "answer": "Big and bushy." }
+    ]
+  },
+  {
+    "id": "snorlax",
+    "name": "Snorlax",
+    "image": "/assets/pokemon/snorlax.png",
+    "trivia": [
+      { "question": "What does Snorlax love to do?", "answer": "Sleep and eat." },
+      { "question": "How big is Snorlax?", "answer": "Very big — it can block roads!" },
+      { "question": "When does Snorlax wake up?", "answer": "When it gets hungry." }
+    ]
+  },
+  {
+    "id": "jigglypuff",
+    "name": "Jigglypuff",
+    "image": "/assets/pokemon/jigglypuff.png",
+    "trivia": [
+      { "question": "What does Jigglypuff do with its voice?", "answer": "Sings a song that makes people sleepy." },
+      { "question": "What does Jigglypuff look like?", "answer": "A round, pink balloon-like Pokemon." },
+      { "question": "What does Jigglypuff get upset about?", "answer": "When people fall asleep during its song." }
+    ]
+  },
+  {
+    "id": "pidgey",
+    "name": "Pidgey",
+    "image": "/assets/pokemon/pidgey.png",
+    "trivia": [
+      { "question": "What type of Pokemon is Pidgey?", "answer": "Normal and Flying." },
+      { "question": "Where does Pidgey like to live?", "answer": "Forests and open fields." },
+      { "question": "What does Pidgey do when it's scared?", "answer": "Kicks up sand to escape." }
+    ]
+  },
+  {
+    "id": "psyduck",
+    "name": "Psyduck",
+    "image": "/assets/pokemon/psyduck.png",
+    "trivia": [
+      { "question": "What type is Psyduck?", "answer": "Water." },
+      { "question": "What happens when Psyduck gets a headache?", "answer": "It can use powerful psychic powers." },
+      { "question": "What is on Psyduck's head?", "answer": "A few small feathers." }
+    ]
+  },
+  {
+    "id": "meowth",
+    "name": "Meowth",
+    "image": "/assets/pokemon/meowth.png",
+    "trivia": [
+      { "question": "What does Meowth love?", "answer": "Shiny coins and round objects." },
+      { "question": "What is special about Meowth?", "answer": "It can talk like a person in the show!" },
+      { "question": "What is on Meowth's forehead?", "answer": "A gold coin." }
+    ]
+  },
+  {
+    "id": "growlithe",
+    "name": "Growlithe",
+    "image": "/assets/pokemon/growlithe.png",
+    "trivia": [
+      { "question": "What type of Pokemon is Growlithe?", "answer": "Fire." },
+      { "question": "What is Growlithe loyal to?", "answer": "Its Trainer — like a loyal dog." },
+      { "question": "What does Growlithe use to tell others to stay away?", "answer": "Its bark and growl." }
+    ]
+  },
+  {
+    "id": "oddish",
+    "name": "Oddish",
+    "image": "/assets/pokemon/oddish.png",
+    "trivia": [
+      { "question": "What type is Oddish?", "answer": "Grass and Poison." },
+      { "question": "When does Oddish like to come out?", "answer": "At night to plant its feet and absorb nutrients." },
+      { "question": "What does Oddish look like?", "answer": "A small blue plant with leaves on its head." }
+    ]
+  },
+  {
+    "id": "machop",
+    "name": "Machop",
+    "image": "/assets/pokemon/machop.png",
+    "trivia": [
+      { "question": "What type is Machop?", "answer": "Fighting." },
+      { "question": "What does Machop love to do?", "answer": "Exercise and build its muscles." },
+      { "question": "How many fingers does Machop have on each hand?", "answer": "Five." }
+    ]
+  },
+  {
+    "id": "geodude",
+    "name": "Geodude",
+    "image": "/assets/pokemon/geodude.png",
+    "trivia": [
+      { "question": "What type is Geodude?", "answer": "Rock and Ground." },
+      { "question": "What are Geodude's arms good for?", "answer": "Climbing and punching." },
+      { "question": "Where do Geodude often live?", "answer": "On mountains and in caves." }
+    ]
+  }
+]
