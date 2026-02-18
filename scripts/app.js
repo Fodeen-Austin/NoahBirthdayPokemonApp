@@ -11,6 +11,8 @@ import {
   clearTeamAssignment,
   clearTeamProgress,
   clearAllStationData,
+  writeInitialStationAssignment,
+  clearInitialStationAssignment,
 } from "./instant.js";
 
 const appEl = document.getElementById("app");
@@ -96,6 +98,7 @@ function buildInitialState(teams, stations, config) {
       stationPokemonChoices: {},
     })),
     stationOccupancy,
+    initialStationOrder: null,
     activeTeamId: null,
     finalUnlocked: false,
     trivia: {
@@ -152,6 +155,9 @@ function normalizeState(loadedState, teams, config, stations) {
       stationPokemonChoices,
     };
   });
+  if (normalized.initialStationOrder == null) {
+    normalized.initialStationOrder = null;
+  }
   if (!normalized.trivia) {
     normalized.trivia = {
       active: false,
@@ -206,8 +212,19 @@ function statusIndicatorMarkup() {
 
 function applyRemoteStationData(parsed) {
   if (!parsed || !state) return;
-  const { stationOccupancy, teamAssignments, teamProgress } = parsed;
+  const { stationOccupancy, teamAssignments, teamProgress, initialStationOrder } = parsed;
   let changed = false;
+
+  if (initialStationOrder != null && Array.isArray(initialStationOrder) && initialStationOrder.length === 4) {
+    if (
+      !state.initialStationOrder ||
+      state.initialStationOrder.length !== 4 ||
+      state.initialStationOrder.some((id, i) => id !== initialStationOrder[i])
+    ) {
+      state.initialStationOrder = [...initialStationOrder];
+      changed = true;
+    }
+  }
 
   if (stationOccupancy) {
     STATION_IDS.forEach((id) => {
@@ -366,6 +383,43 @@ function getTeamsForInstantSync() {
   }));
 }
 
+/**
+ * Ensures each of the 4 teams has a unique starting station (random permutation of 4 of 5 stations).
+ * Writes to InstantDB so all devices see the same assignment. Call when Start Game is clicked.
+ */
+function assignInitialStationsIfNeeded() {
+  const teamIds = state.teams.map((t) => t.id);
+  if (teamIds.length !== 4) return;
+
+  const hasOrder = Array.isArray(state.initialStationOrder) && state.initialStationOrder.length === 4;
+
+  if (hasOrder) {
+    for (let i = 0; i < 4; i++) {
+      const team = state.teams[i];
+      const stationId = state.initialStationOrder[i];
+      if (!team.currentStationId && stationId) {
+        state.stationOccupancy[stationId] = { state: "occupied", occupiedByTeamId: team.id };
+        team.currentStationId = stationId;
+        occupyStation(stationId, team.id);
+        assignTeamToStation(team.id, stationId);
+      }
+    }
+    return;
+  }
+
+  const shuffled = [...STATION_IDS].sort(() => Math.random() - 0.5);
+  const order = shuffled.slice(0, 4);
+  writeInitialStationAssignment(teamIds, order);
+  state.initialStationOrder = order;
+  for (let i = 0; i < 4; i++) {
+    const stationId = order[i];
+    const teamId = teamIds[i];
+    state.stationOccupancy[stationId] = { state: "occupied", occupiedByTeamId: teamId };
+    const team = state.teams.find((t) => t.id === teamId);
+    if (team) team.currentStationId = stationId;
+  }
+}
+
 function assignNextStation(teamId) {
   const teamState = getTeamState(teamId);
   if (!teamState || teamState.completed) return null;
@@ -395,6 +449,15 @@ function persistTeamStatusSyncPayload(teamId) {
 
 function normalizeCode(value) {
   return value.trim().toUpperCase().replace(/\s+/g, "");
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 function escapeHtml(value) {
@@ -855,10 +918,11 @@ function renderTrivia() {
     }
   }
 
-  const optionsMarkup = question.options
+  const shuffledOptions = shuffleArray([...question.options]);
+  const optionsMarkup = shuffledOptions
     .map(
       (option) =>
-        `<button class="button secondary block" data-action="trivia-answer" data-answer="${option}">${option}</button>`
+        `<button class="button secondary block" data-action="trivia-answer" data-answer="${escapeHtml(option)}">${escapeHtml(option)}</button>`
     )
     .join("");
 
@@ -979,11 +1043,13 @@ function resetProgress() {
   STATION_IDS.forEach((id) => {
     state.stationOccupancy[id] = { state: "open", occupiedByTeamId: null };
   });
+  state.initialStationOrder = null;
   clearAllStationData();
   state.teams.forEach((t) => {
     clearTeamAssignment(t.id);
     clearTeamProgress(t.id);
   });
+  clearInitialStationAssignment();
   persistAllTeamStatuses(getTeamsForInstantSync());
   state.activeTeamId = null;
   state.finalUnlocked = false;
@@ -1158,6 +1224,7 @@ appEl.addEventListener("click", (event) => {
   const action = target.dataset.action;
   if (action === "start-game" || action === "resume-game") {
     currentScreen = "teamPicker";
+    assignInitialStationsIfNeeded();
     render();
     return;
   }
@@ -1171,9 +1238,15 @@ appEl.addEventListener("click", (event) => {
   if (action === "reset-game") {
     const ok = window.confirm("Reset all progress?");
     if (ok) {
+      clearAllStationData();
+      state.teams.forEach((t) => {
+        clearTeamAssignment(t.id);
+        clearTeamProgress(t.id);
+      });
+      clearInitialStationAssignment();
       clearState();
-      state = buildInitialState(appData.teams, appData.config);
-      persistAllTeamStatuses(state.teams);
+      state = buildInitialState(appData.teams, appData.stations, appData.config);
+      persistAllTeamStatuses(getTeamsForInstantSync());
       currentScreen = "home";
       render();
     }

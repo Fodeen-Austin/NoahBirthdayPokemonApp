@@ -339,11 +339,15 @@ body {
 .status-ok {
   color: var(--ok);
   font-weight: 700;
+  -webkit-text-stroke: 3px white;
+  text-shadow: 0 0 4px white, 0 0 8px white;
 }
 
 .status-warn {
   color: var(--warn);
   font-weight: 700;
+  -webkit-text-stroke: 3px white;
+  text-shadow: 0 0 4px white, 0 0 8px white;
 }
 
 .status-pill {

@@ -71,7 +71,13 @@ function parseStationData(data) {
     }
   });
 
-  return { stationOccupancy, teamAssignments, teamProgress };
+  const initialRows = data.initial_station_assignment || [];
+  const initialStationOrder =
+    Array.isArray(initialRows[0]?.stationOrder) && initialRows[0].stationOrder.length === 4
+      ? initialRows[0].stationOrder
+      : null;
+
+  return { stationOccupancy, teamAssignments, teamProgress, initialStationOrder };
 }
 
 export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStationData) {
@@ -119,6 +125,7 @@ export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStat
         station_occupancy: {},
         team_current_assignment: {},
         team_station_progress: {},
+        initial_station_assignment: {},
       },
       (resp) => {
         if (resp.error) {
@@ -244,4 +251,48 @@ export function clearAllStationData() {
     );
   });
   db.transact(txs);
+}
+
+const INITIAL_ASSIGNMENT_ID = "1";
+
+/** Write initial station order and assign each team to a distinct station. Call when starting a new game. */
+export function writeInitialStationAssignment(teamIds, stationOrder) {
+  if (!db || !Array.isArray(teamIds) || !Array.isArray(stationOrder) || stationOrder.length !== 4) return;
+  const txs = [
+    db.tx.initial_station_assignment[INITIAL_ASSIGNMENT_ID].update({
+      stationOrder,
+      updatedAt: Date.now(),
+    }),
+  ];
+  for (let i = 0; i < 4; i++) {
+    const stationId = stationOrder[i];
+    const teamId = teamIds[i];
+    if (!stationId || !teamId) continue;
+    txs.push(
+      db.tx.station_occupancy[stationId].update({
+        stationId,
+        state: "occupied",
+        occupiedByTeamId: teamId,
+        occupiedAt: Date.now(),
+        updatedAt: Date.now(),
+      }),
+      db.tx.team_current_assignment[teamId].update({
+        teamId,
+        currentStationId: stationId,
+        assignedAt: Date.now(),
+        updatedAt: Date.now(),
+      })
+    );
+  }
+  db.transact(txs);
+}
+
+/** Clear initial assignment entity so next Start Game creates a new random assignment. */
+export function clearInitialStationAssignment() {
+  if (!db) return;
+  try {
+    db.transact(db.tx.initial_station_assignment[INITIAL_ASSIGNMENT_ID].delete());
+  } catch (e) {
+    console.warn("clearInitialStationAssignment:", e);
+  }
 }
