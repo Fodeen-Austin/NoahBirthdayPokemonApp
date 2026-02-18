@@ -8,7 +8,17 @@
     <link rel="stylesheet" href="./styles/components.css" />
   </head>
   <body>
-    <main id="app" class="app"></main>
+    <main id="app" class="app">
+      <p style="background:#fff;color:#000;padding:20px;margin:20px;">Loading…</p>
+    </main>
+    <script>
+      setTimeout(function(){
+        var el = document.getElementById("app");
+        if (el && el.innerHTML.indexOf("Loading") !== -1 && el.innerHTML.indexOf("did not load") === -1) {
+          el.innerHTML = '<div style="background:#fff;color:#000;padding:20px;margin:20px;"><strong>App did not load.</strong> Open DevTools (F12) and check the Console for errors. Ensure you are using a local server (e.g. <code>python3 -m http.server 5500</code>) and visiting <a href="/">http://localhost:5500/</a></div>';
+        }
+      }, 5000);
+    </script>
     <script type="module" src="./scripts/app.js"></script>
   </body>
 </html>

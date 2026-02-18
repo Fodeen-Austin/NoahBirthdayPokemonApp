@@ -339,29 +339,34 @@ body {
 .status-ok {
   color: var(--ok);
   font-weight: 700;
-  -webkit-text-stroke: 3px white;
-  text-shadow: 0 0 4px white, 0 0 8px white;
 }
 
 .status-warn {
-  color: var(--warn);
+  color: #c62828;
   font-weight: 700;
-  -webkit-text-stroke: 3px white;
-  text-shadow: 0 0 4px white, 0 0 8px white;
 }
 
 .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-soft);
   font-size: 0.85rem;
   font-weight: 700;
   margin-bottom: 10px;
+}
+
+/* InstantDB and Correct use green; Oops uses red (status-warn) */
+.status-pill.status-ok {
+  color: var(--ok);
+}
+
+.status-pill.status-warn {
+  color: #c62828;
 }
 
 .center {

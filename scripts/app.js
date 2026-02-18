@@ -1,21 +1,24 @@
 import { loadState, saveState, clearState } from "./storage.js";
 import { getRandomQuestion, pickQuestionById } from "./trivia.js";
-import {
-  initInstant,
-  persistAllTeamStatuses,
-  persistTeamStatus,
-  releaseStation,
-  occupyStation,
-  completeStationForTeam,
-  assignTeamToStation,
-  clearTeamAssignment,
-  clearTeamProgress,
-  clearAllStationData,
-  writeInitialStationAssignment,
-  clearInitialStationAssignment,
-} from "./instant.js";
 
 const appEl = document.getElementById("app");
+
+let instant = null;
+const noop = () => {};
+const noopInstant = {
+  initInstant: () => null,
+  persistTeamStatus: noop,
+  persistAllTeamStatuses: noop,
+  releaseStation: noop,
+  occupyStation: noop,
+  completeStationForTeam: noop,
+  assignTeamToStation: noop,
+  clearTeamAssignment: noop,
+  clearTeamProgress: noop,
+  clearAllStationData: noop,
+  writeInitialStationAssignment: noop,
+  clearInitialStationAssignment: noop,
+};
 
 const appData = {
   config: null,
@@ -42,7 +45,22 @@ const DEFAULT_NAME_INPUTS = 12;
 init();
 
 async function init() {
-  await loadData();
+  try {
+    await loadData();
+  } catch (err) {
+    console.error("Load failed:", err);
+    const msg = err?.name === "AbortError" ? "Request timed out. Ensure the server is running and try http://localhost:5500/ or http://127.0.0.1:5500/" : String(err?.message || err);
+    appEl.innerHTML = `
+      <section class="screen">
+        <div class="card">
+          <h2>Failed to load</h2>
+          <p style="color:#1c1c1f">${msg}</p>
+          <p class="muted">Check the browser console (F12). Try a hard refresh (Cmd+Shift+R).</p>
+        </div>
+      </section>
+    `;
+    return;
+  }
   state = normalizeState(
     loadState() || buildInitialState(appData.teams, appData.stations, appData.config),
     appData.teams,
@@ -52,7 +70,18 @@ async function init() {
   if (!resetTeamId && appData.teams.length) {
     resetTeamId = appData.teams[0].id;
   }
-  initInstant(
+  try {
+    instant = await Promise.race([
+      import("./instant.js"),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("InstantDB module timeout")), 6000)
+      ),
+    ]);
+  } catch (e) {
+    console.warn("InstantDB unavailable, running local-only:", e);
+    instant = noopInstant;
+  }
+  instant.initInstant(
     appData.config.instantAppId,
     getTeamsForInstantSync(),
     applyRemoteTeamStatuses,
@@ -67,13 +96,28 @@ async function init() {
 }
 
 async function loadData() {
-  const [config, teams, stations, trivia, pokemonPool] = await Promise.all([
-    fetch("./data/config.json").then((res) => res.json()),
-    fetch("./data/teams.json").then((res) => res.json()),
-    fetch("./data/stations.json").then((res) => res.json()),
-    fetch("./data/trivia.json").then((res) => res.json()),
-    fetch("./data/pokemon-pool.json").then((res) => res.json()),
-  ]);
+  const base = new URL("../", import.meta.url).href;
+  const urls = [
+    new URL("data/config.json", base).href,
+    new URL("data/teams.json", base).href,
+    new URL("data/stations.json", base).href,
+    new URL("data/trivia.json", base).href,
+    new URL("data/pokemon-pool.json", base).href,
+  ];
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  const fetches = urls.map(async (url) => {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
+    return res.json();
+  });
+  let results;
+  try {
+    results = await Promise.all(fetches);
+  } finally {
+    clearTimeout(timeout);
+  }
+  const [config, teams, stations, trivia, pokemonPool] = results;
   appData.config = config;
   appData.teams = teams;
   appData.stations = stations;
@@ -197,15 +241,9 @@ function handleInstantStatus(nextStatus) {
 function statusIndicatorMarkup() {
   const hasAppId = Boolean(appData.config?.instantAppId);
   if (!hasAppId) {
-    return `<div class="status-pill muted">InstantDB: local only</div>`;
+    return `<div class="status-pill status-ok">InstantDB: local only</div>`;
   }
-  const statusClass =
-    instantStatus.state === "connected"
-      ? "status-ok"
-      : instantStatus.state === "error"
-        ? "status-warn"
-        : "muted";
-  return `<div class="status-pill ${statusClass}">${escapeHtml(
+  return `<div class="status-pill status-ok">${escapeHtml(
     instantStatus.text
   )}</div>`;
 }
@@ -279,8 +317,8 @@ function applyRemoteStationData(parsed) {
     ) {
       const nextStation = assignNextStation(state.activeTeamId);
       if (nextStation) {
-        occupyStation(nextStation.id, state.activeTeamId);
-        assignTeamToStation(state.activeTeamId, nextStation.id);
+        instant.occupyStation(nextStation.id, state.activeTeamId);
+        instant.assignTeamToStation(state.activeTeamId, nextStation.id);
         persistTeamStatusSyncPayload(state.activeTeamId);
       }
     }
@@ -400,8 +438,8 @@ function assignInitialStationsIfNeeded() {
       if (!team.currentStationId && stationId) {
         state.stationOccupancy[stationId] = { state: "occupied", occupiedByTeamId: team.id };
         team.currentStationId = stationId;
-        occupyStation(stationId, team.id);
-        assignTeamToStation(team.id, stationId);
+        instant.occupyStation(stationId, team.id);
+        instant.assignTeamToStation(team.id, stationId);
       }
     }
     return;
@@ -409,7 +447,7 @@ function assignInitialStationsIfNeeded() {
 
   const shuffled = [...STATION_IDS].sort(() => Math.random() - 0.5);
   const order = shuffled.slice(0, 4);
-  writeInitialStationAssignment(teamIds, order);
+  instant.writeInitialStationAssignment(teamIds, order);
   state.initialStationOrder = order;
   for (let i = 0; i < 4; i++) {
     const stationId = order[i];
@@ -432,15 +470,15 @@ function assignNextStation(teamId) {
   const chosen = available[Math.floor(Math.random() * available.length)];
   state.stationOccupancy[chosen] = { state: "occupied", occupiedByTeamId: teamId };
   teamState.currentStationId = chosen;
-  occupyStation(chosen, teamId);
-  assignTeamToStation(teamId, chosen);
+  instant.occupyStation(chosen, teamId);
+  instant.assignTeamToStation(teamId, chosen);
   return getStationData(chosen);
 }
 
 function persistTeamStatusSyncPayload(teamId) {
   const teamState = getTeamState(teamId);
   if (!teamState) return;
-  persistTeamStatus({
+  instant.persistTeamStatus({
     id: teamState.id,
     stepIndex: getCompletedCount(teamState),
     completed: teamState.completed,
@@ -939,7 +977,7 @@ function renderTrivia() {
       </div>
       ${
         triviaFeedback
-          ? `<p class="${triviaFeedback.type === "ok" ? "status-ok" : "status-warn"}">${triviaFeedback.text}</p>`
+          ? `<div class="status-pill ${triviaFeedback.type === "ok" ? "status-ok" : "status-warn"}">${triviaFeedback.text}</div>`
           : ""
       }
       <div class="card">
@@ -991,13 +1029,13 @@ function handleCodeSubmit() {
     teamState.completed = teamState.completedStationIds.length >= (state.maxStations ?? 5);
     state.stationOccupancy[stationId] = { state: "open", occupiedByTeamId: null };
     teamState.currentStationId = null;
-    releaseStation(stationId);
-    completeStationForTeam(state.activeTeamId, stationId);
-    clearTeamAssignment(state.activeTeamId);
+    instant.releaseStation(stationId);
+    instant.completeStationForTeam(state.activeTeamId, stationId);
+    instant.clearTeamAssignment(state.activeTeamId);
 
     if (teamState.completed) {
       persistTeamStatusSyncPayload(state.activeTeamId);
-      persistAllTeamStatuses(getTeamsForInstantSync());
+      instant.persistAllTeamStatuses(getTeamsForInstantSync());
       feedback = { type: "ok", text: "Nice throw! You caught it!" };
       input.value = "";
       updateFinalUnlocked();
@@ -1044,13 +1082,13 @@ function resetProgress() {
     state.stationOccupancy[id] = { state: "open", occupiedByTeamId: null };
   });
   state.initialStationOrder = null;
-  clearAllStationData();
+  instant.clearAllStationData();
   state.teams.forEach((t) => {
-    clearTeamAssignment(t.id);
-    clearTeamProgress(t.id);
+    instant.clearTeamAssignment(t.id);
+    instant.clearTeamProgress(t.id);
   });
-  clearInitialStationAssignment();
-  persistAllTeamStatuses(getTeamsForInstantSync());
+  instant.clearInitialStationAssignment();
+  instant.persistAllTeamStatuses(getTeamsForInstantSync());
   state.activeTeamId = null;
   state.finalUnlocked = false;
   state.trivia = {
@@ -1071,14 +1109,14 @@ function resetTeamProgress(teamId) {
   const currentStationId = teamState.currentStationId;
   if (currentStationId) {
     state.stationOccupancy[currentStationId] = { state: "open", occupiedByTeamId: null };
-    releaseStation(currentStationId);
+    instant.releaseStation(currentStationId);
   }
   teamState.completedStationIds = [];
   teamState.currentStationId = null;
   teamState.completed = false;
   teamState.stationPokemonChoices = {};
-  clearTeamAssignment(teamId);
-  clearTeamProgress(teamId);
+  instant.clearTeamAssignment(teamId);
+  instant.clearTeamProgress(teamId);
   persistTeamStatusSyncPayload(teamId);
   if (state.activeTeamId === teamId) {
     state.activeTeamId = null;
@@ -1109,14 +1147,6 @@ function updateNameAtIndex(index, value) {
 function clearAssignments() {
   state.assignments.names = [];
   state.assignments.teams = buildEmptyAssignments(appData.teams).teams;
-}
-
-function shuffleArray(list) {
-  for (let i = list.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [list[i], list[j]] = [list[j], list[i]];
-  }
-  return list;
 }
 
 function randomizeTeams() {
@@ -1238,15 +1268,15 @@ appEl.addEventListener("click", (event) => {
   if (action === "reset-game") {
     const ok = window.confirm("Reset all progress?");
     if (ok) {
-      clearAllStationData();
+      instant.clearAllStationData();
       state.teams.forEach((t) => {
-        clearTeamAssignment(t.id);
-        clearTeamProgress(t.id);
+        instant.clearTeamAssignment(t.id);
+        instant.clearTeamProgress(t.id);
       });
-      clearInitialStationAssignment();
+      instant.clearInitialStationAssignment();
       clearState();
       state = buildInitialState(appData.teams, appData.stations, appData.config);
-      persistAllTeamStatuses(getTeamsForInstantSync());
+      instant.persistAllTeamStatuses(getTeamsForInstantSync());
       currentScreen = "home";
       render();
     }
