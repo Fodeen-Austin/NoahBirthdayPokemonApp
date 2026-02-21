@@ -207,11 +207,37 @@ export async function fetchInitialStationAssignmentOnce() {
   return getCachedInitialStationOrder();
 }
 
+export function fetchAssignmentsOnce() {
+  if (!db || typeof db.queryOnce !== "function") return Promise.resolve(null);
+  return db
+    .queryOnce({ game_assignments: {} })
+    .then((data) => (data ? parseAssignmentsData(data) : null))
+    .catch((e) => {
+      console.warn("fetchAssignmentsOnce:", e);
+      return null;
+    });
+}
+
 export function persistAssignments(names, teams) {
   if (!db || !teams || typeof teams !== "object") return;
   db.transact(
     db.tx.game_assignments[GAME_ASSIGNMENTS_ID].update({
       names: Array.isArray(names) ? names : [],
+      teams,
+      updatedAt: Date.now(),
+    })
+  );
+}
+
+/** Clear game_assignments in DB so all devices see a full reset (no names, no team members). */
+export function clearGameAssignments(teamIds) {
+  if (!db) return;
+  const teams = Array.isArray(teamIds)
+    ? teamIds.reduce((acc, id) => ({ ...acc, [id]: [] }), {})
+    : {};
+  db.transact(
+    db.tx.game_assignments[GAME_ASSIGNMENTS_ID].update({
+      names: [],
       teams,
       updatedAt: Date.now(),
     })

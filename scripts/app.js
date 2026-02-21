@@ -19,6 +19,7 @@ const noopInstant = {
   writeInitialStationAssignment: noop,
   clearInitialStationAssignment: noop,
   persistAssignments: noop,
+  clearGameAssignments: noop,
   getCachedInitialStationOrder: () => null,
   fetchInitialStationAssignmentOnce: () => Promise.resolve(null),
 };
@@ -92,6 +93,10 @@ async function init() {
     applyRemoteStationData,
     applyRemoteAssignments
   );
+  if (typeof instant.fetchAssignmentsOnce === "function") {
+    const remote = await instant.fetchAssignmentsOnce();
+    if (remote) applyRemoteAssignments(remote);
+  }
   if (state.finalUnlocked) {
     currentScreen = "final";
   }
@@ -254,17 +259,14 @@ function statusIndicatorMarkup() {
 
 function applyRemoteAssignments(parsed) {
   if (!parsed || !state || !state.assignments) return;
-  const hasContent = (Array.isArray(parsed.names) && parsed.names.length > 0) ||
-    (parsed.teams && typeof parsed.teams === "object" && appData.teams.some((t) => (parsed.teams[t.id]?.length ?? 0) > 0));
-  if (!hasContent) return;
   if (Array.isArray(parsed.names)) {
     state.assignments.names = parsed.names;
   }
   if (parsed.teams && typeof parsed.teams === "object") {
     appData.teams.forEach((team) => {
-      if (Array.isArray(parsed.teams[team.id])) {
-        state.assignments.teams[team.id] = parsed.teams[team.id];
-      }
+      state.assignments.teams[team.id] = Array.isArray(parsed.teams[team.id])
+        ? parsed.teams[team.id]
+        : [];
     });
   }
   saveState(state);
@@ -1194,9 +1196,6 @@ function updateNameAtIndex(index, value) {
     state.assignments.names = [];
   }
   state.assignments.names[index] = value;
-  if (instant?.persistAssignments) {
-    instant.persistAssignments(state.assignments.names, state.assignments.teams);
-  }
 }
 
 function clearAssignments() {
@@ -1328,7 +1327,7 @@ appEl.addEventListener("click", async (event) => {
   }
 
   if (action === "reset-game") {
-    const ok = window.confirm("Reset all progress?");
+    const ok = window.confirm("Reset all progress on all devices?");
     if (ok) {
       instant.clearAllStationData();
       state.teams.forEach((t) => {
@@ -1336,6 +1335,9 @@ appEl.addEventListener("click", async (event) => {
         instant.clearTeamProgress(t.id);
       });
       instant.clearInitialStationAssignment();
+      if (instant.clearGameAssignments) {
+        instant.clearGameAssignments(appData.teams.map((t) => t.id));
+      }
       clearState();
       state = buildInitialState(appData.teams, appData.stations, appData.config);
       instant.persistAllTeamStatuses(getTeamsForInstantSync());
@@ -1483,3 +1485,16 @@ appEl.addEventListener("input", (event) => {
     resetTeamId = target.value;
   }
 });
+
+appEl.addEventListener("blur", (event) => {
+  const target = event.target;
+  if (target.matches("[data-input='kid-name']") && currentScreen === "assignTeams" && instant?.persistAssignments) {
+    const index = Number.parseInt(target.dataset.index, 10);
+    if (Number.isFinite(index)) {
+      if (!Array.isArray(state.assignments.names)) state.assignments.names = [];
+      state.assignments.names[index] = target.value;
+      saveState(state);
+      instant.persistAssignments(state.assignments.names, state.assignments.teams);
+    }
+  }
+}, true);
