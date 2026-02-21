@@ -254,7 +254,6 @@ function statusIndicatorMarkup() {
 
 function applyRemoteAssignments(parsed) {
   if (!parsed || !state || !state.assignments) return;
-  if (currentScreen === "assignTeams") return;
   const hasContent = (Array.isArray(parsed.names) && parsed.names.length > 0) ||
     (parsed.teams && typeof parsed.teams === "object" && appData.teams.some((t) => (parsed.teams[t.id]?.length ?? 0) > 0));
   if (!hasContent && !state._remoteAssignmentsAppliedOnce) return;
@@ -481,8 +480,7 @@ async function assignInitialStationsIfNeeded() {
     return;
   }
 
-  const shuffled = [...STATION_IDS].sort(() => Math.random() - 0.5);
-  order = shuffled.slice(0, 4);
+  order = ["A", "B", "C", "D"];
   if (instant) instant.writeInitialStationAssignment(teamIds, order);
   state.initialStationOrder = order;
   for (let i = 0; i < 4; i++) {
