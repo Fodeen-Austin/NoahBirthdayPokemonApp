@@ -44,6 +44,12 @@ function seedStationOccupancy() {
   db.transact(txs);
 }
 
+function toRows(val) {
+  if (Array.isArray(val)) return val;
+  if (val && typeof val === "object") return Object.entries(val).map(([k, v]) => ({ ...v, id: v?.id ?? v?.stationId ?? k }));
+  return [];
+}
+
 function parseStationData(data) {
   const stationOccupancy = {};
   const teamAssignments = {};
@@ -52,22 +58,23 @@ function parseStationData(data) {
   STATION_IDS.forEach((id) => {
     stationOccupancy[id] = { state: "open", occupiedByTeamId: null };
   });
-  (data.station_occupancy || []).forEach((row) => {
-    if (row && row.id) {
-      stationOccupancy[row.id] = {
+  toRows(data.station_occupancy).forEach((row) => {
+    const id = row.id ?? row.stationId;
+    if (id) {
+      stationOccupancy[id] = {
         state: row.state === "occupied" ? "occupied" : "open",
         occupiedByTeamId: row.occupiedByTeamId || null,
       };
     }
   });
 
-  (data.team_current_assignment || []).forEach((row) => {
+  toRows(data.team_current_assignment).forEach((row) => {
     if (row && row.teamId) {
       teamAssignments[row.teamId] = row.currentStationId || null;
     }
   });
 
-  (data.team_station_progress || []).forEach((row) => {
+  toRows(data.team_station_progress).forEach((row) => {
     if (row && row.teamId && row.stationId && row.status === "completed") {
       if (!teamProgress[row.teamId]) teamProgress[row.teamId] = [];
       if (!teamProgress[row.teamId].includes(row.stationId)) {
@@ -88,8 +95,8 @@ function parseStationData(data) {
 }
 
 function parseAssignmentsData(data) {
-  const raw = data.game_assignments || [];
-  const rows = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  const raw = data.game_assignments;
+  const rows = toRows(raw ?? []);
   const row = rows.find((r) => r && (r.id === GAME_ASSIGNMENTS_ID || r.id == null)) || rows[0];
   if (!row) return { names: [], teams: {} };
   return {

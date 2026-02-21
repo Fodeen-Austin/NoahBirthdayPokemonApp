@@ -256,8 +256,7 @@ function applyRemoteAssignments(parsed) {
   if (!parsed || !state || !state.assignments) return;
   const hasContent = (Array.isArray(parsed.names) && parsed.names.length > 0) ||
     (parsed.teams && typeof parsed.teams === "object" && appData.teams.some((t) => (parsed.teams[t.id]?.length ?? 0) > 0));
-  if (!hasContent && !state._remoteAssignmentsAppliedOnce) return;
-  state._remoteAssignmentsAppliedOnce = true;
+  if (!hasContent) return;
   if (Array.isArray(parsed.names)) {
     state.assignments.names = parsed.names;
   }
@@ -284,6 +283,17 @@ function applyRemoteStationData(parsed) {
       state.initialStationOrder.some((id, i) => id !== initialStationOrder[i])
     ) {
       state.initialStationOrder = [...initialStationOrder];
+      changed = true;
+    }
+  } else {
+    if (state.initialStationOrder != null || state.teams.some((t) => t.currentStationId != null)) {
+      state.initialStationOrder = null;
+      STATION_IDS.forEach((id) => {
+        state.stationOccupancy[id] = { state: "open", occupiedByTeamId: null };
+      });
+      state.teams.forEach((team) => {
+        team.currentStationId = null;
+      });
       changed = true;
     }
   }
@@ -600,15 +610,23 @@ function render() {
   saveState(state);
 }
 
+function hasAnyTeamAssignments() {
+  return state.assignments?.teams && appData.teams.some(
+    (t) => Array.isArray(state.assignments.teams[t.id]) && state.assignments.teams[t.id].length > 0
+  );
+}
+
 function renderHome() {
   const hasProgress = state.teams.some((team) => getCompletedCount(team) > 0);
+  const canStart = hasAnyTeamAssignments();
   appEl.innerHTML = `
     <section class="screen">
       ${statusIndicatorMarkup()}
       <h1 class="title">${appData.config.appTitle}</h1>
       <p class="subtitle">Choose a team, solve riddles, and unlock the final clue.</p>
       <div class="card">
-        <button class="button block" data-action="start-game">Start Game</button>
+        <button class="button block" data-action="start-game" ${canStart ? "" : "disabled"}>Start Game</button>
+        ${!canStart ? "<p class=\"muted\">Assign teams first to start the game.</p>" : ""}
         <div class="spacer"></div>
         <button class="button secondary block" data-action="resume-game" ${
           hasProgress ? "" : "disabled"
@@ -1296,6 +1314,7 @@ appEl.addEventListener("click", async (event) => {
 
   const action = target.dataset.action;
   if (action === "start-game" || action === "resume-game") {
+    if (action === "start-game" && !hasAnyTeamAssignments()) return;
     currentScreen = "teamPicker";
     await assignInitialStationsIfNeeded();
     render();
@@ -1368,6 +1387,10 @@ appEl.addEventListener("click", async (event) => {
   }
 
   if (action === "back-to-teams") {
+    if (currentScreen === "assignTeams" && instant?.persistAssignments) {
+      instant.persistAssignments(state.assignments.names, state.assignments.teams);
+      saveState(state);
+    }
     state.activeTeamId = null;
     state.trivia.active = false;
     currentScreen = "teamPicker";
@@ -1410,6 +1433,10 @@ appEl.addEventListener("click", async (event) => {
   }
 
   if (action === "go-home") {
+    if (currentScreen === "assignTeams" && instant?.persistAssignments) {
+      instant.persistAssignments(state.assignments.names, state.assignments.teams);
+      saveState(state);
+    }
     state.activeTeamId = null;
     state.trivia.active = false;
     currentScreen = "home";
