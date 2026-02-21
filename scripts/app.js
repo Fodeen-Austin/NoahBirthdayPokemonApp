@@ -259,6 +259,15 @@ function statusIndicatorMarkup() {
 
 function applyRemoteAssignments(parsed) {
   if (!parsed || !state || !state.assignments) return;
+  const remoteHasContent =
+    (Array.isArray(parsed.names) && parsed.names.some((n) => String(n).trim())) ||
+    (parsed.teams && typeof parsed.teams === "object" && appData.teams.some((t) => (parsed.teams[t.id]?.length ?? 0) > 0));
+  const localHasContent =
+    (Array.isArray(state.assignments.names) && state.assignments.names.some((n) => String(n).trim())) ||
+    appData.teams.some((t) => (state.assignments.teams?.[t.id]?.length ?? 0) > 0);
+  if (currentScreen === "assignTeams" && localHasContent && !remoteHasContent) {
+    return;
+  }
   if (Array.isArray(parsed.names)) {
     state.assignments.names = parsed.names;
   }
