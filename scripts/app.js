@@ -254,6 +254,7 @@ function statusIndicatorMarkup() {
 
 function applyRemoteAssignments(parsed) {
   if (!parsed || !state || !state.assignments) return;
+  if (currentScreen === "assignTeams") return;
   const hasContent = (Array.isArray(parsed.names) && parsed.names.length > 0) ||
     (parsed.teams && typeof parsed.teams === "object" && appData.teams.some((t) => (parsed.teams[t.id]?.length ?? 0) > 0));
   if (!hasContent && !state._remoteAssignmentsAppliedOnce) return;
