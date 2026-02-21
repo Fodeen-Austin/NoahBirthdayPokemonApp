@@ -18,6 +18,9 @@ const noopInstant = {
   clearAllStationData: noop,
   writeInitialStationAssignment: noop,
   clearInitialStationAssignment: noop,
+  persistAssignments: noop,
+  getCachedInitialStationOrder: () => null,
+  fetchInitialStationAssignmentOnce: () => Promise.resolve(null),
 };
 
 const appData = {
@@ -86,7 +89,8 @@ async function init() {
     getTeamsForInstantSync(),
     applyRemoteTeamStatuses,
     handleInstantStatus,
-    applyRemoteStationData
+    applyRemoteStationData,
+    applyRemoteAssignments
   );
   if (state.finalUnlocked) {
     currentScreen = "final";
@@ -246,6 +250,26 @@ function statusIndicatorMarkup() {
   return `<div class="status-pill status-ok">${escapeHtml(
     instantStatus.text
   )}</div>`;
+}
+
+function applyRemoteAssignments(parsed) {
+  if (!parsed || !state || !state.assignments) return;
+  const hasContent = (Array.isArray(parsed.names) && parsed.names.length > 0) ||
+    (parsed.teams && typeof parsed.teams === "object" && appData.teams.some((t) => (parsed.teams[t.id]?.length ?? 0) > 0));
+  if (!hasContent && !state._remoteAssignmentsAppliedOnce) return;
+  state._remoteAssignmentsAppliedOnce = true;
+  if (Array.isArray(parsed.names)) {
+    state.assignments.names = parsed.names;
+  }
+  if (parsed.teams && typeof parsed.teams === "object") {
+    appData.teams.forEach((team) => {
+      if (Array.isArray(parsed.teams[team.id])) {
+        state.assignments.teams[team.id] = parsed.teams[team.id];
+      }
+    });
+  }
+  saveState(state);
+  render();
 }
 
 function applyRemoteStationData(parsed) {
@@ -422,32 +446,43 @@ function getTeamsForInstantSync() {
 }
 
 /**
- * Ensures each of the 4 teams has a unique starting station (random permutation of 4 of 5 stations).
- * Writes to InstantDB so all devices see the same assignment. Call when Start Game is clicked.
+ * Ensures each of the 4 teams has a unique starting station. Uses the single shared game in InstantDB:
+ * if an initial assignment already exists (from any device), we use it; otherwise we create one once.
+ * Call when Start Game or Resume Game is clicked.
  */
-function assignInitialStationsIfNeeded() {
+async function assignInitialStationsIfNeeded() {
   const teamIds = state.teams.map((t) => t.id);
   if (teamIds.length !== 4) return;
 
-  const hasOrder = Array.isArray(state.initialStationOrder) && state.initialStationOrder.length === 4;
-
-  if (hasOrder) {
+  let order = Array.isArray(state.initialStationOrder) && state.initialStationOrder.length === 4
+    ? state.initialStationOrder
+    : null;
+  if (!order && instant) {
+    order = instant.getCachedInitialStationOrder?.() ?? null;
+    if (!order && typeof instant.fetchInitialStationAssignmentOnce === "function") {
+      order = await instant.fetchInitialStationAssignmentOnce();
+    }
+  }
+  if (order && order.length === 4) {
+    state.initialStationOrder = order;
     for (let i = 0; i < 4; i++) {
       const team = state.teams[i];
-      const stationId = state.initialStationOrder[i];
+      const stationId = order[i];
       if (!team.currentStationId && stationId) {
         state.stationOccupancy[stationId] = { state: "occupied", occupiedByTeamId: team.id };
         team.currentStationId = stationId;
-        instant.occupyStation(stationId, team.id);
-        instant.assignTeamToStation(team.id, stationId);
+        if (instant) {
+          instant.occupyStation(stationId, team.id);
+          instant.assignTeamToStation(team.id, stationId);
+        }
       }
     }
     return;
   }
 
   const shuffled = [...STATION_IDS].sort(() => Math.random() - 0.5);
-  const order = shuffled.slice(0, 4);
-  instant.writeInitialStationAssignment(teamIds, order);
+  order = shuffled.slice(0, 4);
+  if (instant) instant.writeInitialStationAssignment(teamIds, order);
   state.initialStationOrder = order;
   for (let i = 0; i < 4; i++) {
     const stationId = order[i];
@@ -1142,11 +1177,17 @@ function updateNameAtIndex(index, value) {
     state.assignments.names = [];
   }
   state.assignments.names[index] = value;
+  if (instant?.persistAssignments) {
+    instant.persistAssignments(state.assignments.names, state.assignments.teams);
+  }
 }
 
 function clearAssignments() {
   state.assignments.names = [];
   state.assignments.teams = buildEmptyAssignments(appData.teams).teams;
+  if (instant?.persistAssignments) {
+    instant.persistAssignments(state.assignments.names, state.assignments.teams);
+  }
 }
 
 function randomizeTeams() {
@@ -1160,6 +1201,9 @@ function randomizeTeams() {
     assignments[team.id].push(name);
   });
   state.assignments.teams = assignments;
+  if (instant?.persistAssignments) {
+    instant.persistAssignments(state.assignments.names, state.assignments.teams);
+  }
 }
 
 async function copyTextToClipboard(value) {
@@ -1245,7 +1289,7 @@ function nextTriviaQuestion() {
   render();
 }
 
-appEl.addEventListener("click", (event) => {
+appEl.addEventListener("click", async (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) {
     return;
@@ -1254,7 +1298,7 @@ appEl.addEventListener("click", (event) => {
   const action = target.dataset.action;
   if (action === "start-game" || action === "resume-game") {
     currentScreen = "teamPicker";
-    assignInitialStationsIfNeeded();
+    await assignInitialStationsIfNeeded();
     render();
     return;
   }

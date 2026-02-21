@@ -1,12 +1,17 @@
 import { init } from "https://esm.sh/@instantdb/core";
 
 const STATION_IDS = ["A", "B", "C", "D", "E"];
+const INITIAL_ASSIGNMENT_ID = "1";
+const GAME_ASSIGNMENTS_ID = "1";
 
 let db = null;
 let subscribed = false;
 let stationSubscribed = false;
+let assignmentsSubscribed = false;
 let teamSeeded = false;
 let stationSeeded = false;
+/** Cached from last station subscription so Start Game can use existing order before creating one. */
+let cachedInitialStationOrder = null;
 
 function buildPayload(team) {
   return {
@@ -71,16 +76,29 @@ function parseStationData(data) {
     }
   });
 
-  const initialRows = data.initial_station_assignment || [];
+  const raw = data.initial_station_assignment;
+  const initialRows = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
   const initialStationOrder =
     Array.isArray(initialRows[0]?.stationOrder) && initialRows[0].stationOrder.length === 4
       ? initialRows[0].stationOrder
       : null;
+  cachedInitialStationOrder = initialStationOrder;
 
   return { stationOccupancy, teamAssignments, teamProgress, initialStationOrder };
 }
 
-export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStationData) {
+function parseAssignmentsData(data) {
+  const raw = data.game_assignments || [];
+  const rows = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  const row = rows.find((r) => r && (r.id === GAME_ASSIGNMENTS_ID || r.id == null)) || rows[0];
+  if (!row) return { names: [], teams: {} };
+  return {
+    names: Array.isArray(row.names) ? row.names : [],
+    teams: row.teams && typeof row.teams === "object" ? row.teams : {},
+  };
+}
+
+export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStationData, onRemoteAssignments) {
   if (!appId) {
     if (typeof onStatus === "function") {
       onStatus({ state: "offline", text: "InstantDB: local only" });
@@ -92,6 +110,14 @@ export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStat
     onStatus({ state: "connecting", text: "InstantDB: connecting..." });
   }
   db = init({ appId });
+
+  if (!assignmentsSubscribed && typeof onRemoteAssignments === "function") {
+    db.subscribeQuery({ game_assignments: {} }, (resp) => {
+      if (resp.error || !resp.data) return;
+      onRemoteAssignments(parseAssignmentsData(resp.data));
+    });
+    assignmentsSubscribed = true;
+  }
 
   if (!subscribed) {
     db.subscribeQuery({ team_statuses: {} }, (resp) => {
@@ -148,6 +174,41 @@ export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStat
   }
 
   return db;
+}
+
+/** Returns the last initial station order from the station subscription (so we don't create a new game if one exists). */
+export function getCachedInitialStationOrder() {
+  return cachedInitialStationOrder != null && Array.isArray(cachedInitialStationOrder) && cachedInitialStationOrder.length === 4
+    ? [...cachedInitialStationOrder]
+    : null;
+}
+
+/** One-time fetch of initial_station_assignment so we only create a new game when none exists. */
+export async function fetchInitialStationAssignmentOnce() {
+  if (!db) return null;
+  try {
+    if (typeof db.queryOnce === "function") {
+      const data = await db.queryOnce({ initial_station_assignment: {} });
+      const raw = data?.initial_station_assignment;
+      const rows = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+      const row = rows.find((r) => r && r.stationOrder) || rows[0];
+      if (Array.isArray(row?.stationOrder) && row.stationOrder.length === 4) return row.stationOrder;
+    }
+  } catch (e) {
+    console.warn("fetchInitialStationAssignmentOnce:", e);
+  }
+  return getCachedInitialStationOrder();
+}
+
+export function persistAssignments(names, teams) {
+  if (!db || !teams || typeof teams !== "object") return;
+  db.transact(
+    db.tx.game_assignments[GAME_ASSIGNMENTS_ID].update({
+      names: Array.isArray(names) ? names : [],
+      teams,
+      updatedAt: Date.now(),
+    })
+  );
 }
 
 export function persistTeamStatus(team) {
@@ -252,8 +313,6 @@ export function clearAllStationData() {
   });
   db.transact(txs);
 }
-
-const INITIAL_ASSIGNMENT_ID = "1";
 
 /** Write initial station order and assign each team to a distinct station. Call when starting a new game. */
 export function writeInitialStationAssignment(teamIds, stationOrder) {
