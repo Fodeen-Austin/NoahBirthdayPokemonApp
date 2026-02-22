@@ -97,7 +97,16 @@ async function init() {
   );
   if (typeof instant.fetchAssignmentsOnce === "function") {
     const remote = await instant.fetchAssignmentsOnce();
-    if (remote) applyRemoteAssignments(remote);
+    const namesCount = Array.isArray(remote?.names) ? remote.names.length : 0;
+    const teamsSummary = remote?.teams && typeof remote.teams === "object"
+      ? Object.fromEntries(Object.entries(remote.teams).map(([k, v]) => [k, Array.isArray(v) ? v.length : 0]))
+      : null;
+    console.log("[Assignments] fetchAssignmentsOnce result:", remote ? { namesCount, teamsSummary } : null);
+    if (remote) {
+      applyRemoteAssignments(remote, { source: "fetch" });
+    } else {
+      console.log("[Assignments] fetchAssignmentsOnce returned null, no assignments applied on load.");
+    }
   }
   if (state.finalUnlocked) {
     currentScreen = "final";
@@ -259,18 +268,41 @@ function statusIndicatorMarkup() {
   )}</div>`;
 }
 
-function applyRemoteAssignments(parsed) {
-  if (!parsed || !state || !state.assignments) return;
+function applyRemoteAssignments(parsed, opts = {}) {
+  const source = opts.source || "subscription";
+  if (!parsed || !state || !state.assignments) {
+    console.log("[Assignments] applyRemoteAssignments skipped (no parsed/state):", { source });
+    return;
+  }
   const remoteHasContent =
     (Array.isArray(parsed.names) && parsed.names.some((n) => String(n).trim())) ||
     (parsed.teams && typeof parsed.teams === "object" && appData.teams.some((t) => (parsed.teams[t.id]?.length ?? 0) > 0));
   const localHasContent =
     (Array.isArray(state.assignments.names) && state.assignments.names.some((n) => String(n).trim())) ||
     appData.teams.some((t) => (state.assignments.teams?.[t.id]?.length ?? 0) > 0);
+  let skip = false;
+  let skipReason = "";
   if (localHasContent && !remoteHasContent) {
-    if (currentScreen === "assignTeams") return;
-    if (Date.now() - lastPersistAssignmentsTime < PERSIST_GRACE_MS) return;
+    if (currentScreen === "assignTeams") {
+      skip = true;
+      skipReason = "on assignTeams screen";
+    } else if (Date.now() - lastPersistAssignmentsTime < PERSIST_GRACE_MS) {
+      skip = true;
+      skipReason = "within persist grace window";
+    }
   }
+  const teamCounts = parsed.teams && typeof parsed.teams === "object"
+    ? Object.fromEntries(appData.teams.map((t) => [t.id, (parsed.teams[t.id]?.length ?? 0)]))
+    : {};
+  console.log("[Assignments] applyRemoteAssignments:", {
+    source,
+    remoteHasContent,
+    localHasContent,
+    skip,
+    skipReason,
+    remoteTeamCounts: teamCounts,
+  });
+  if (skip) return;
   if (Array.isArray(parsed.names)) {
     state.assignments.names = parsed.names;
   }
@@ -282,6 +314,7 @@ function applyRemoteAssignments(parsed) {
     });
   }
   saveState(state);
+  console.log("[Assignments] applied successfully. hasAnyTeamAssignments:", hasAnyTeamAssignments());
   render();
 }
 

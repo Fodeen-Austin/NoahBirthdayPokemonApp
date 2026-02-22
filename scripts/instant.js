@@ -120,8 +120,20 @@ export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStat
 
   if (!assignmentsSubscribed && typeof onRemoteAssignments === "function") {
     db.subscribeQuery({ game_assignments: {} }, (resp) => {
-      if (resp.error || !resp.data) return;
-      onRemoteAssignments(parseAssignmentsData(resp.data));
+      if (resp.error) {
+        console.warn("[Assignments] subscription error:", resp.error);
+        return;
+      }
+      if (!resp.data) return;
+      const parsed = parseAssignmentsData(resp.data);
+      const teamCounts = parsed.teams && typeof parsed.teams === "object"
+        ? Object.entries(parsed.teams).map(([k, v]) => [k, Array.isArray(v) ? v.length : 0])
+        : [];
+      console.log("[Assignments] subscription payload:", {
+        namesLength: Array.isArray(parsed.names) ? parsed.names.length : 0,
+        teamCounts: Object.fromEntries(teamCounts),
+      });
+      onRemoteAssignments(parsed);
     });
     assignmentsSubscribed = true;
   }
@@ -208,12 +220,33 @@ export async function fetchInitialStationAssignmentOnce() {
 }
 
 export function fetchAssignmentsOnce() {
-  if (!db || typeof db.queryOnce !== "function") return Promise.resolve(null);
+  if (!db || typeof db.queryOnce !== "function") {
+    console.log("[Assignments] fetchAssignmentsOnce skipped (no db or queryOnce)");
+    return Promise.resolve(null);
+  }
   return db
     .queryOnce({ game_assignments: {} })
-    .then((data) => (data ? parseAssignmentsData(data) : null))
+    .then((data) => {
+      if (!data) {
+        console.log("[Assignments] fetchAssignmentsOnce raw: null/empty");
+        return null;
+      }
+      const parsed = data ? parseAssignmentsData(data) : null;
+      if (parsed) {
+        const teamCounts = parsed.teams && typeof parsed.teams === "object"
+          ? Object.fromEntries(Object.entries(parsed.teams).map(([k, v]) => [k, Array.isArray(v) ? v.length : 0]))
+          : {};
+        console.log("[Assignments] fetchAssignmentsOnce parsed:", {
+          namesLength: Array.isArray(parsed.names) ? parsed.names.length : 0,
+          teamCounts,
+        });
+      } else {
+        console.log("[Assignments] fetchAssignmentsOnce parse returned null");
+      }
+      return parsed;
+    })
     .catch((e) => {
-      console.warn("fetchAssignmentsOnce:", e);
+      console.warn("[Assignments] fetchAssignmentsOnce error:", e);
       return null;
     });
 }
