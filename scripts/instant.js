@@ -1,8 +1,8 @@
 import { init } from "https://esm.sh/@instantdb/core";
 
 const STATION_IDS = ["A", "B", "C", "D", "E"];
-const INITIAL_ASSIGNMENT_ID = "1";
-const GAME_ASSIGNMENTS_ID = "1";
+const GAME_ASSIGNMENTS_SLUG = "default";
+const INITIAL_ASSIGNMENT_SLUG = "default";
 
 let db = null;
 let subscribed = false;
@@ -25,7 +25,7 @@ function buildPayload(team) {
 function seedTeamStatuses(teams) {
   if (!db || !teams?.length) return;
   const txs = teams.map((team) =>
-    db.tx.team_statuses[team.id].update(buildPayload(team))
+    db.tx.team_statuses.lookup("teamId", team.id).update({ ...buildPayload(team), teamId: team.id })
   );
   db.transact(txs);
 }
@@ -33,7 +33,7 @@ function seedTeamStatuses(teams) {
 function seedStationOccupancy() {
   if (!db) return;
   const txs = STATION_IDS.map((id) =>
-    db.tx.station_occupancy[id].update({
+    db.tx.station_occupancy.lookup("stationId", id).update({
       stationId: id,
       state: "open",
       occupiedByTeamId: null,
@@ -84,10 +84,11 @@ function parseStationData(data) {
   });
 
   const raw = data.initial_station_assignment;
-  const initialRows = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  const initialRows = toRows(raw ?? []);
+  const initialRow = initialRows.find((r) => r && r.slug === INITIAL_ASSIGNMENT_SLUG) || initialRows[0];
   const initialStationOrder =
-    Array.isArray(initialRows[0]?.stationOrder) && initialRows[0].stationOrder.length === 4
-      ? initialRows[0].stationOrder
+    Array.isArray(initialRow?.stationOrder) && initialRow.stationOrder.length === 4
+      ? initialRow.stationOrder
       : null;
   cachedInitialStationOrder = initialStationOrder;
 
@@ -97,7 +98,7 @@ function parseStationData(data) {
 function parseAssignmentsData(data) {
   const raw = data.game_assignments;
   const rows = toRows(raw ?? []);
-  const row = rows.find((r) => r && (r.id === GAME_ASSIGNMENTS_ID || r.id == null)) || rows[0];
+  const row = rows.find((r) => r && r.slug === GAME_ASSIGNMENTS_SLUG) || rows[0];
   if (!row) return { names: [], teams: {} };
   return {
     names: Array.isArray(row.names) ? row.names : [],
@@ -209,8 +210,8 @@ export async function fetchInitialStationAssignmentOnce() {
     if (typeof db.queryOnce === "function") {
       const data = await db.queryOnce({ initial_station_assignment: {} });
       const raw = data?.initial_station_assignment;
-      const rows = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
-      const row = rows.find((r) => r && r.stationOrder) || rows[0];
+      const rows = toRows(raw ?? []);
+      const row = rows.find((r) => r && r.slug === INITIAL_ASSIGNMENT_SLUG) || rows.find((r) => r?.stationOrder) || rows[0];
       if (Array.isArray(row?.stationOrder) && row.stationOrder.length === 4) return row.stationOrder;
     }
   } catch (e) {
@@ -254,7 +255,8 @@ export function fetchAssignmentsOnce() {
 export function persistAssignments(names, teams) {
   if (!db || !teams || typeof teams !== "object") return;
   db.transact(
-    db.tx.game_assignments[GAME_ASSIGNMENTS_ID].update({
+    db.tx.game_assignments.lookup("slug", GAME_ASSIGNMENTS_SLUG).update({
+      slug: GAME_ASSIGNMENTS_SLUG,
       names: Array.isArray(names) ? names : [],
       teams,
       updatedAt: Date.now(),
@@ -269,7 +271,8 @@ export function clearGameAssignments(teamIds) {
     ? teamIds.reduce((acc, id) => ({ ...acc, [id]: [] }), {})
     : {};
   db.transact(
-    db.tx.game_assignments[GAME_ASSIGNMENTS_ID].update({
+    db.tx.game_assignments.lookup("slug", GAME_ASSIGNMENTS_SLUG).update({
+      slug: GAME_ASSIGNMENTS_SLUG,
       names: [],
       teams,
       updatedAt: Date.now(),
@@ -279,13 +282,13 @@ export function clearGameAssignments(teamIds) {
 
 export function persistTeamStatus(team) {
   if (!db || !team) return;
-  db.transact(db.tx.team_statuses[team.id].update(buildPayload(team)));
+  db.transact(db.tx.team_statuses.lookup("teamId", team.id).update({ ...buildPayload(team), teamId: team.id }));
 }
 
 export function persistAllTeamStatuses(teams) {
   if (!db || !teams?.length) return;
   const txs = teams.map((team) =>
-    db.tx.team_statuses[team.id].update(buildPayload(team))
+    db.tx.team_statuses.lookup("teamId", team.id).update({ ...buildPayload(team), teamId: team.id })
   );
   db.transact(txs);
 }
@@ -293,7 +296,8 @@ export function persistAllTeamStatuses(teams) {
 export function releaseStation(stationId) {
   if (!db || !stationId) return;
   db.transact(
-    db.tx.station_occupancy[stationId].update({
+    db.tx.station_occupancy.lookup("stationId", stationId).update({
+      stationId,
       state: "open",
       occupiedByTeamId: null,
       occupiedAt: null,
@@ -305,7 +309,8 @@ export function releaseStation(stationId) {
 export function occupyStation(stationId, teamId) {
   if (!db || !stationId || !teamId) return;
   db.transact(
-    db.tx.station_occupancy[stationId].update({
+    db.tx.station_occupancy.lookup("stationId", stationId).update({
+      stationId,
       state: "occupied",
       occupiedByTeamId: teamId,
       occupiedAt: Date.now(),
@@ -316,9 +321,10 @@ export function occupyStation(stationId, teamId) {
 
 export function completeStationForTeam(teamId, stationId) {
   if (!db || !teamId || !stationId) return;
-  const progressId = `${teamId}-${stationId}`;
+  const progressKey = `${teamId}-${stationId}`;
   db.transact(
-    db.tx.team_station_progress[progressId].update({
+    db.tx.team_station_progress.lookup("progressKey", progressKey).update({
+      progressKey,
       teamId,
       stationId,
       status: "completed",
@@ -331,7 +337,7 @@ export function completeStationForTeam(teamId, stationId) {
 export function assignTeamToStation(teamId, stationId) {
   if (!db || !teamId) return;
   db.transact(
-    db.tx.team_current_assignment[teamId].update({
+    db.tx.team_current_assignment.lookup("teamId", teamId).update({
       teamId,
       currentStationId: stationId,
       assignedAt: Date.now(),
@@ -343,7 +349,7 @@ export function assignTeamToStation(teamId, stationId) {
 export function clearTeamAssignment(teamId) {
   if (!db || !teamId) return;
   db.transact(
-    db.tx.team_current_assignment[teamId].update({
+    db.tx.team_current_assignment.lookup("teamId", teamId).update({
       teamId,
       currentStationId: null,
       assignedAt: null,
@@ -356,7 +362,7 @@ export function clearTeamProgress(teamId) {
   if (!db || !teamId) return;
   try {
     const txs = STATION_IDS.map((stationId) =>
-      db.tx.team_station_progress[`${teamId}-${stationId}`].delete()
+      db.tx.team_station_progress.lookup("progressKey", `${teamId}-${stationId}`).delete()
     );
     db.transact(txs);
   } catch (e) {
@@ -366,17 +372,15 @@ export function clearTeamProgress(teamId) {
 
 export function clearAllStationData() {
   if (!db) return;
-  const txs = [];
-  STATION_IDS.forEach((id) => {
-    txs.push(
-      db.tx.station_occupancy[id].update({
-        state: "open",
-        occupiedByTeamId: null,
-        occupiedAt: null,
-        updatedAt: Date.now(),
-      })
-    );
-  });
+  const txs = STATION_IDS.map((id) =>
+    db.tx.station_occupancy.lookup("stationId", id).update({
+      stationId: id,
+      state: "open",
+      occupiedByTeamId: null,
+      occupiedAt: null,
+      updatedAt: Date.now(),
+    })
+  );
   db.transact(txs);
 }
 
@@ -384,7 +388,8 @@ export function clearAllStationData() {
 export function writeInitialStationAssignment(teamIds, stationOrder) {
   if (!db || !Array.isArray(teamIds) || !Array.isArray(stationOrder) || stationOrder.length !== 4) return;
   const txs = [
-    db.tx.initial_station_assignment[INITIAL_ASSIGNMENT_ID].update({
+    db.tx.initial_station_assignment.lookup("slug", INITIAL_ASSIGNMENT_SLUG).update({
+      slug: INITIAL_ASSIGNMENT_SLUG,
       stationOrder,
       updatedAt: Date.now(),
     }),
@@ -394,14 +399,14 @@ export function writeInitialStationAssignment(teamIds, stationOrder) {
     const teamId = teamIds[i];
     if (!stationId || !teamId) continue;
     txs.push(
-      db.tx.station_occupancy[stationId].update({
+      db.tx.station_occupancy.lookup("stationId", stationId).update({
         stationId,
         state: "occupied",
         occupiedByTeamId: teamId,
         occupiedAt: Date.now(),
         updatedAt: Date.now(),
       }),
-      db.tx.team_current_assignment[teamId].update({
+      db.tx.team_current_assignment.lookup("teamId", teamId).update({
         teamId,
         currentStationId: stationId,
         assignedAt: Date.now(),
@@ -416,7 +421,7 @@ export function writeInitialStationAssignment(teamIds, stationOrder) {
 export function clearInitialStationAssignment() {
   if (!db) return;
   try {
-    db.transact(db.tx.initial_station_assignment[INITIAL_ASSIGNMENT_ID].delete());
+    db.transact(db.tx.initial_station_assignment.lookup("slug", INITIAL_ASSIGNMENT_SLUG).delete());
   } catch (e) {
     console.warn("clearInitialStationAssignment:", e);
   }
