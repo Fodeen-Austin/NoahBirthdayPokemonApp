@@ -43,8 +43,10 @@ let codeSuccessNextStation = null; // { station } when showing "Next station: X"
 let codeClueFeedback = null;
 let resetTeamId = null;
 let instantStatus = { state: "idle", text: "InstantDB: connecting..." };
+let lastPersistAssignmentsTime = 0;
 
 const DEFAULT_NAME_INPUTS = 12;
+const PERSIST_GRACE_MS = 5000;
 
 init();
 
@@ -265,8 +267,9 @@ function applyRemoteAssignments(parsed) {
   const localHasContent =
     (Array.isArray(state.assignments.names) && state.assignments.names.some((n) => String(n).trim())) ||
     appData.teams.some((t) => (state.assignments.teams?.[t.id]?.length ?? 0) > 0);
-  if (currentScreen === "assignTeams" && localHasContent && !remoteHasContent) {
-    return;
+  if (localHasContent && !remoteHasContent) {
+    if (currentScreen === "assignTeams") return;
+    if (Date.now() - lastPersistAssignmentsTime < PERSIST_GRACE_MS) return;
   }
   if (Array.isArray(parsed.names)) {
     state.assignments.names = parsed.names;
@@ -1211,6 +1214,7 @@ function clearAssignments() {
   state.assignments.names = [];
   state.assignments.teams = buildEmptyAssignments(appData.teams).teams;
   if (instant?.persistAssignments) {
+    lastPersistAssignmentsTime = Date.now();
     instant.persistAssignments(state.assignments.names, state.assignments.teams);
   }
 }
@@ -1227,6 +1231,7 @@ function randomizeTeams() {
   });
   state.assignments.teams = assignments;
   if (instant?.persistAssignments) {
+    lastPersistAssignmentsTime = Date.now();
     instant.persistAssignments(state.assignments.names, state.assignments.teams);
   }
 }
@@ -1399,6 +1404,7 @@ appEl.addEventListener("click", async (event) => {
 
   if (action === "back-to-teams") {
     if (currentScreen === "assignTeams" && instant?.persistAssignments) {
+      lastPersistAssignmentsTime = Date.now();
       instant.persistAssignments(state.assignments.names, state.assignments.teams);
       saveState(state);
     }
@@ -1445,6 +1451,7 @@ appEl.addEventListener("click", async (event) => {
 
   if (action === "go-home") {
     if (currentScreen === "assignTeams" && instant?.persistAssignments) {
+      lastPersistAssignmentsTime = Date.now();
       instant.persistAssignments(state.assignments.names, state.assignments.teams);
       saveState(state);
     }
@@ -1503,6 +1510,7 @@ appEl.addEventListener("blur", (event) => {
       if (!Array.isArray(state.assignments.names)) state.assignments.names = [];
       state.assignments.names[index] = target.value;
       saveState(state);
+      lastPersistAssignmentsTime = Date.now();
       instant.persistAssignments(state.assignments.names, state.assignments.teams);
     }
   }
