@@ -554,9 +554,14 @@ function assignNextStation(teamId) {
   if (!teamState || teamState.completed) return null;
   const completedSet = new Set(teamState.completedStationIds || []);
   const remaining = STATION_IDS.filter((id) => !completedSet.has(id));
-  const available = remaining.filter(
-    (id) => state.stationOccupancy[id]?.state === "open"
-  );
+  // Only assign stations that are open and not currently occupied by another team
+  const available = remaining.filter((id) => {
+    if (state.stationOccupancy[id]?.state !== "open") return false;
+    const occupiedByOther = state.teams.some(
+      (t) => t.id !== teamId && t.currentStationId === id
+    );
+    return !occupiedByOther;
+  });
   if (available.length === 0) return null;
   const chosen = available[Math.floor(Math.random() * available.length)];
   state.stationOccupancy[chosen] = { state: "occupied", occupiedByTeamId: teamId };
@@ -669,7 +674,7 @@ function renderHome() {
   appEl.innerHTML = `
     <section class="screen">
       ${statusIndicatorMarkup()}
-      <h1 class="title">${appData.config.appTitle}</h1>
+      <h1 class="title title--pokemon">${appData.config.appTitle}</h1>
       <p class="subtitle">Choose a team, solve riddles, and unlock the final clue.</p>
       <div class="card">
         <button class="button block" data-action="start-game" ${canStart ? "" : "disabled"}>Start Game</button>
@@ -701,6 +706,13 @@ function renderTeamPicker() {
       const teamState = getTeamState(team.id);
       const progress = `${getCompletedCount(teamState)}/${maxStations}`;
       const status = teamState.completed ? "Completed" : "In Progress";
+      const currentStation = teamState?.currentStationId
+        ? `Station ${teamState.currentStationId}`
+        : "—";
+      const completedStations = Array.isArray(teamState?.completedStationIds) &&
+        teamState.completedStationIds.length > 0
+        ? teamState.completedStationIds.map((id) => `Station ${id}`).join(", ")
+        : "None";
       const assignedNames = state.assignments?.teams?.[team.id] || [];
       const namesMarkup = assignedNames.length
         ? `<ul class="name-list">${assignedNames
@@ -711,6 +723,8 @@ function renderTeamPicker() {
         <div class="card team-card ${team.id}">
           <h3>${team.name}</h3>
           <p class="muted">Progress: ${progress} - ${status}</p>
+          <p class="team-station-info"><strong>Current station:</strong> ${currentStation}</p>
+          <p class="team-station-info muted"><strong>Completed:</strong> ${completedStations}</p>
           ${namesMarkup}
           <button class="button block" data-action="pick-team" data-team="${team.id}">Open Team</button>
         </div>

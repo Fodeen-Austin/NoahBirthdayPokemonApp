@@ -24,12 +24,16 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(160deg, var(--bg) 0%, var(--bg-soft) 100%);
   color: var(--text);
 }
 
 .app {
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
   padding: 24px 18px 32px;
   display: flex;
   align-items: stretch;
@@ -297,6 +301,14 @@ body {
   margin: 6px 0 14px;
 }
 
+.title--pokemon {
+  font-family: "Luckiest Guy", cursive;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #1a1a2e;
+  text-shadow: 2px 2px 0 rgba(255, 203, 0, 0.4);
+}
+
 .subtitle {
   margin: 0 0 14px;
   color: var(--muted);
@@ -371,4 +383,33 @@ body {
 
 .center {
   text-align: center;
+}
+
+/* Footer on every page: single line with Fodeen logo */
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  padding: 16px 18px 24px;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.app-footer__text {
+  white-space: nowrap;
+}
+
+.app-footer__logo-link {
+  display: block;
+  line-height: 0;
+}
+
+.app-footer__logo {
+  height: 44px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }

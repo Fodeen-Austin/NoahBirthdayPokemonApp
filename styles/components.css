@@ -74,6 +74,11 @@
   border-left-color: #f9a825;
 }
 
+.team-station-info {
+  margin: 0.25em 0;
+  font-size: 0.9rem;
+}
+
 .step-main {
   display: flex;
   flex-direction: column;
