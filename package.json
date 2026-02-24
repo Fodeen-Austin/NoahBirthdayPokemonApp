@@ -1,0 +1,24 @@
+{
+  "name": "noah-pokemon-birthday-app",
+  "version": "1.0.0",
+  "description": "A browser-based web app used at a city park birthday party to run a Pokémon-themed scavenger hunt.   Kids complete **physical activities at stations** (throw Poké tennis ball at a target). A parent/guide then enters a **code printed on the back of the station target** into the app to unlock the next clue.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fodeen-Austin/NoahBirthdayPokemonApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Fodeen-Austin/NoahBirthdayPokemonApp/issues"
+  },
+  "homepage": "https://github.com/Fodeen-Austin/NoahBirthdayPokemonApp#readme",
+  "dependencies": {
+    "@instantdb/react": "^0.22.142"
+  }
+}

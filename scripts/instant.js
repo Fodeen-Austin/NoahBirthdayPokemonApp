@@ -1,8 +1,51 @@
-import { init } from "https://esm.sh/@instantdb/core";
+import { init, i } from "https://esm.sh/@instantdb/core";
 
 const STATION_IDS = ["A", "B", "C", "D", "E"];
 const GAME_ASSIGNMENTS_SLUG = "default";
 const INITIAL_ASSIGNMENT_SLUG = "default";
+
+const INSTANT_SCHEMA = i.schema({
+  entities: {
+    game_assignments: i.entity({
+      slug: i.string().unique().indexed(),
+      names: i.json().optional(),
+      teams: i.json().optional(),
+      updatedAt: i.number().optional(),
+    }),
+    initial_station_assignment: i.entity({
+      slug: i.string().unique().indexed().optional(),
+      stationOrder: i.json().optional(),
+      updatedAt: i.number().optional(),
+    }),
+    station_occupancy: i.entity({
+      stationId: i.string().unique().indexed(),
+      state: i.string().optional(),
+      occupiedByTeamId: i.string().optional(),
+      occupiedAt: i.number().optional(),
+      updatedAt: i.number().optional(),
+    }),
+    team_statuses: i.entity({
+      teamId: i.string().unique().indexed(),
+      stepIndex: i.number().optional(),
+      completed: i.boolean().optional(),
+      updatedAt: i.number().optional(),
+    }),
+    team_current_assignment: i.entity({
+      teamId: i.string().unique().indexed(),
+      currentStationId: i.string().optional(),
+      assignedAt: i.number().optional(),
+      updatedAt: i.number().optional(),
+    }),
+    team_station_progress: i.entity({
+      progressKey: i.string().unique().indexed().optional(),
+      teamId: i.string().optional(),
+      stationId: i.string().optional(),
+      status: i.string().optional(),
+      completedAt: i.number().optional(),
+      updatedAt: i.number().optional(),
+    }),
+  },
+});
 
 let db = null;
 let subscribed = false;
@@ -117,7 +160,17 @@ export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStat
   if (typeof onStatus === "function") {
     onStatus({ state: "connecting", text: "InstantDB: connecting..." });
   }
-  db = init({ appId });
+  db = init({
+    appId,
+    schema: INSTANT_SCHEMA,
+    verbose: true,
+  });
+  if (db && typeof db.on === "function") {
+    db.on("error", (err) => {
+      console.warn("[InstantDB] error:", err?.message ?? err);
+      if (err?.hint) console.warn("[InstantDB] hint:", err.hint);
+    });
+  }
 
   if (!assignmentsSubscribed && typeof onRemoteAssignments === "function") {
     db.subscribeQuery({ game_assignments: {} }, (resp) => {
