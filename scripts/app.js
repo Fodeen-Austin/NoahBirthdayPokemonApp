@@ -517,9 +517,33 @@ async function assignInitialStationsIfNeeded() {
   const teamIds = state.teams.map((t) => t.id);
   if (teamIds.length !== 4) return;
 
-  // Fixed initial mapping for Station 1:
-  // Red -> A, Blue -> B, Green -> C, Yellow -> D
-  const order = ["A", "B", "C", "D"];
+  let order = Array.isArray(state.initialStationOrder) && state.initialStationOrder.length === 4
+    ? state.initialStationOrder
+    : null;
+  if (!order && instant) {
+    order = instant.getCachedInitialStationOrder?.() ?? null;
+    if (!order && typeof instant.fetchInitialStationAssignmentOnce === "function") {
+      order = await instant.fetchInitialStationAssignmentOnce();
+    }
+  }
+  if (order && order.length === 4) {
+    state.initialStationOrder = order;
+    for (let i = 0; i < 4; i++) {
+      const team = state.teams[i];
+      const stationId = order[i];
+      if (!team.currentStationId && stationId) {
+        state.stationOccupancy[stationId] = { state: "occupied", occupiedByTeamId: team.id };
+        team.currentStationId = stationId;
+        if (instant) {
+          instant.occupyStation(stationId, team.id);
+          instant.assignTeamToStation(team.id, stationId);
+        }
+      }
+    }
+    return;
+  }
+
+  order = ["A", "B", "C", "D"];
   if (instant) instant.writeInitialStationAssignment(teamIds, order);
   state.initialStationOrder = order;
   for (let i = 0; i < 4; i++) {
