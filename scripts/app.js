@@ -517,33 +517,9 @@ async function assignInitialStationsIfNeeded() {
   const teamIds = state.teams.map((t) => t.id);
   if (teamIds.length !== 4) return;
 
-  let order = Array.isArray(state.initialStationOrder) && state.initialStationOrder.length === 4
-    ? state.initialStationOrder
-    : null;
-  if (!order && instant) {
-    order = instant.getCachedInitialStationOrder?.() ?? null;
-    if (!order && typeof instant.fetchInitialStationAssignmentOnce === "function") {
-      order = await instant.fetchInitialStationAssignmentOnce();
-    }
-  }
-  if (order && order.length === 4) {
-    state.initialStationOrder = order;
-    for (let i = 0; i < 4; i++) {
-      const team = state.teams[i];
-      const stationId = order[i];
-      if (!team.currentStationId && stationId) {
-        state.stationOccupancy[stationId] = { state: "occupied", occupiedByTeamId: team.id };
-        team.currentStationId = stationId;
-        if (instant) {
-          instant.occupyStation(stationId, team.id);
-          instant.assignTeamToStation(team.id, stationId);
-        }
-      }
-    }
-    return;
-  }
-
-  order = ["A", "B", "C", "D"];
+  // Fixed initial mapping for Station 1:
+  // Red -> A, Blue -> B, Green -> C, Yellow -> D
+  const order = ["A", "B", "C", "D"];
   if (instant) instant.writeInitialStationAssignment(teamIds, order);
   state.initialStationOrder = order;
   for (let i = 0; i < 4; i++) {
@@ -560,14 +536,36 @@ function assignNextStation(teamId) {
   if (!teamState || teamState.completed) return null;
   const completedSet = new Set(teamState.completedStationIds || []);
   const remaining = STATION_IDS.filter((id) => !completedSet.has(id));
-  // Only assign stations that are open and not currently occupied by another team
-  const available = remaining.filter((id) => {
+  const completedCount = completedSet.size;
+
+  const isStationAvailable = (id) => {
+    if (!remaining.includes(id)) return false;
     if (state.stationOccupancy[id]?.state !== "open") return false;
     const occupiedByOther = state.teams.some(
       (t) => t.id !== teamId && t.currentStationId === id
     );
     return !occupiedByOther;
-  });
+  };
+
+  // Special rule: the first team to complete its first station
+  // gets Station E as their second station, if it's available.
+  if (completedCount === 1 && STATION_IDS.includes("E") && isStationAvailable("E")) {
+    const anyTeamHasE = state.teams.some((t) => {
+      const completedIds = t.completedStationIds || [];
+      return completedIds.includes("E") || t.currentStationId === "E";
+    });
+    if (!anyTeamHasE) {
+      const chosen = "E";
+      state.stationOccupancy[chosen] = { state: "occupied", occupiedByTeamId: teamId };
+      teamState.currentStationId = chosen;
+      instant.occupyStation(chosen, teamId);
+      instant.assignTeamToStation(teamId, chosen);
+      return getStationData(chosen);
+    }
+  }
+
+  // Default rule: pick any remaining open station not currently occupied by another team
+  const available = remaining.filter((id) => isStationAvailable(id));
   if (available.length === 0) return null;
   const chosen = available[Math.floor(Math.random() * available.length)];
   state.stationOccupancy[chosen] = { state: "occupied", occupiedByTeamId: teamId };
