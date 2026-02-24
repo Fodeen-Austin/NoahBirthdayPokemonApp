@@ -379,8 +379,14 @@ function applyRemoteStationData(parsed) {
         currentIds.length === remoteIds.length &&
         currentIds.every((id, i) => id === remoteIds[i]);
       if (!idsEqual) {
-        // Don't overwrite local with stale remote: if we have more progress locally, keep it
-        if (remoteIds.length >= currentIds.length) {
+        // Explicit reset (remoteIds = []) should always override local progress on all devices
+        if (remoteIds.length === 0 && currentIds.length > 0) {
+          team.completedStationIds = [];
+          team.completed = false;
+          changed = true;
+        } else if (remoteIds.length >= currentIds.length) {
+          // Otherwise, don't overwrite local with stale remote: only accept if remote has
+          // at least as much progress as we do locally.
           team.completedStationIds = [...remoteIds];
           team.completed = remoteIds.length >= (state.maxStations ?? 5);
           changed = true;
