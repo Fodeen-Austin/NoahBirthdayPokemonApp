@@ -1569,7 +1569,6 @@ appEl.addEventListener("input", (event) => {
   if (target.matches("[data-input='kid-name']")) {
     const index = Number.parseInt(target.dataset.index, 10);
     updateNameAtIndex(index, target.value);
-    saveState(state);
     return;
   }
   if (target.matches("[data-input='reset-team']")) {
