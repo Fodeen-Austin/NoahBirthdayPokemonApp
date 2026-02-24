@@ -6,7 +6,7 @@ const appEl = document.getElementById("app");
 let instant = null;
 const noop = () => {};
 const noopInstant = {
-  initInstant: () => null,
+  initInstant: async () => null,
   persistTeamStatus: noop,
   persistAllTeamStatuses: noop,
   releaseStation: noop,
@@ -87,7 +87,7 @@ async function init() {
     console.warn("InstantDB unavailable, running local-only:", e);
     instant = noopInstant;
   }
-  instant.initInstant(
+  await instant.initInstant(
     appData.config.instantAppId,
     getTeamsForInstantSync(),
     applyRemoteTeamStatuses,

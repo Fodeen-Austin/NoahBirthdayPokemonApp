@@ -1,4 +1,4 @@
-import { init, i } from "https://esm.sh/@instantdb/core";
+import { init, i, id } from "https://esm.sh/@instantdb/core";
 
 const STATION_IDS = ["A", "B", "C", "D", "E"];
 const GAME_ASSIGNMENTS_SLUG = "default";
@@ -53,6 +53,7 @@ let stationSubscribed = false;
 let assignmentsSubscribed = false;
 let teamSeeded = false;
 let stationSeeded = false;
+let seedEntitiesEnsured = false;
 /** Cached from last station subscription so Start Game can use existing order before creating one. */
 let cachedInitialStationOrder = null;
 
@@ -75,9 +76,9 @@ function seedTeamStatuses(teams) {
 
 function seedStationOccupancy() {
   if (!db) return;
-  const txs = STATION_IDS.map((id) =>
-    db.tx.station_occupancy.lookup("stationId", id).update({
-      stationId: id,
+  const txs = STATION_IDS.map((sid) =>
+    db.tx.station_occupancy.lookup("stationId", sid).update({
+      stationId: sid,
       state: "open",
       occupiedByTeamId: null,
       occupiedAt: null,
@@ -85,6 +86,78 @@ function seedStationOccupancy() {
     })
   );
   db.transact(txs);
+}
+
+/** Create entities with id() if they don't exist so lookup().update() can be used. Run once after init. */
+async function ensureSeedEntities(teams) {
+  if (!db || typeof db.queryOnce !== "function" || seedEntitiesEnsured) return;
+  seedEntitiesEnsured = true;
+  const teamIds = Array.isArray(teams) && teams.length ? teams.map((t) => t.id) : ["red", "blue", "green", "yellow"];
+  const txs = [];
+  try {
+    const [gaData, occData, tsData, tcaData, initData] = await Promise.all([
+      db.queryOnce({ game_assignments: {} }),
+      db.queryOnce({ station_occupancy: {} }),
+      db.queryOnce({ team_statuses: {} }),
+      db.queryOnce({ team_current_assignment: {} }),
+      db.queryOnce({ initial_station_assignment: {} }),
+    ]);
+    const gaRows = toRows(gaData?.game_assignments ?? []);
+    if (!gaRows.some((r) => r && r.slug === GAME_ASSIGNMENTS_SLUG)) {
+      txs.push(db.tx.game_assignments[id()].create({
+        slug: GAME_ASSIGNMENTS_SLUG,
+        names: [],
+        teams: teamIds.reduce((acc, tid) => ({ ...acc, [tid]: [] }), {}),
+        updatedAt: Date.now(),
+      }));
+    }
+    const occRows = toRows(occData?.station_occupancy ?? []);
+    STATION_IDS.forEach((sid) => {
+      if (!occRows.some((r) => (r?.stationId ?? r?.id) === sid)) {
+        txs.push(db.tx.station_occupancy[id()].create({
+          stationId: sid,
+          state: "open",
+          occupiedByTeamId: null,
+          occupiedAt: null,
+          updatedAt: Date.now(),
+        }));
+      }
+    });
+    const tsRows = toRows(tsData?.team_statuses ?? []);
+    teamIds.forEach((tid) => {
+      if (!tsRows.some((r) => (r?.teamId ?? r?.id) === tid)) {
+        txs.push(db.tx.team_statuses[id()].create({
+          teamId: tid,
+          stepIndex: 0,
+          completed: false,
+          updatedAt: Date.now(),
+        }));
+      }
+    });
+    const tcaRows = toRows(tcaData?.team_current_assignment ?? []);
+    teamIds.forEach((tid) => {
+      if (!tcaRows.some((r) => (r?.teamId ?? r?.id) === tid)) {
+        txs.push(db.tx.team_current_assignment[id()].create({
+          teamId: tid,
+          currentStationId: null,
+          assignedAt: null,
+          updatedAt: Date.now(),
+        }));
+      }
+    });
+    const initRows = toRows(initData?.initial_station_assignment ?? []);
+    if (!initRows.some((r) => r && r.slug === INITIAL_ASSIGNMENT_SLUG)) {
+      txs.push(db.tx.initial_station_assignment[id()].create({
+        slug: INITIAL_ASSIGNMENT_SLUG,
+        stationOrder: [],
+        updatedAt: 0,
+      }));
+    }
+    if (txs.length) db.transact(txs);
+  } catch (e) {
+    console.warn("[InstantDB] ensureSeedEntities:", e);
+    seedEntitiesEnsured = false;
+  }
 }
 
 function toRows(val) {
@@ -149,7 +222,7 @@ function parseAssignmentsData(data) {
   };
 }
 
-export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStationData, onRemoteAssignments) {
+export async function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStationData, onRemoteAssignments) {
   if (!appId) {
     if (typeof onStatus === "function") {
       onStatus({ state: "offline", text: "InstantDB: local only" });
@@ -171,6 +244,7 @@ export function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemoteStat
       if (err?.hint) console.warn("[InstantDB] hint:", err.hint);
     });
   }
+  await ensureSeedEntities(teams);
 
   if (!assignmentsSubscribed && typeof onRemoteAssignments === "function") {
     db.subscribeQuery({ game_assignments: {} }, (resp) => {
@@ -375,16 +449,23 @@ export function occupyStation(stationId, teamId) {
 export function completeStationForTeam(teamId, stationId) {
   if (!db || !teamId || !stationId) return;
   const progressKey = `${teamId}-${stationId}`;
-  db.transact(
-    db.tx.team_station_progress.lookup("progressKey", progressKey).update({
-      progressKey,
-      teamId,
-      stationId,
-      status: "completed",
-      completedAt: Date.now(),
-      updatedAt: Date.now(),
-    })
-  );
+  const payload = {
+    progressKey,
+    teamId,
+    stationId,
+    status: "completed",
+    completedAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+  db.queryOnce({ team_station_progress: {} }).then((data) => {
+    const rows = toRows(data?.team_station_progress ?? []);
+    const exists = rows.some((r) => (r?.progressKey ?? r?.id) === progressKey);
+    if (exists) {
+      db.transact(db.tx.team_station_progress.lookup("progressKey", progressKey).update(payload));
+    } else {
+      db.transact(db.tx.team_station_progress[id()].create(payload));
+    }
+  }).catch((e) => console.warn("completeStationForTeam:", e));
 }
 
 export function assignTeamToStation(teamId, stationId) {
