@@ -44,6 +44,8 @@ let codeClueFeedback = null;
 let resetTeamId = null;
 let instantStatus = { state: "idle", text: "InstantDB: connecting..." };
 let lastPersistAssignmentsTime = 0;
+/** Coalesce InstantDB-driven UI updates so full re-renders do not spam (Safari freeze / spurious input blur). */
+let renderRafId = null;
 
 const DEFAULT_NAME_INPUTS = 12;
 const PERSIST_GRACE_MS = 5000;
@@ -55,7 +57,7 @@ async function init() {
     await loadData();
   } catch (err) {
     console.error("Load failed:", err);
-    const msg = err?.name === "AbortError" ? "Request timed out. Ensure the server is running and try http://localhost:5500/ or http://127.0.0.1:5500/" : String(err?.message || err);
+    const msg = err?.name === "AbortError" ? "Request timed out. Ensure the server is running and try http://localhost:5555/ or http://127.0.0.1:5555/ (see serve.sh)" : String(err?.message || err);
     appEl.innerHTML = `
       <section class="screen">
         <div class="card">
@@ -281,7 +283,7 @@ function handleInstantStatus(nextStatus) {
     return;
   }
   instantStatus = { state: nextState, text: nextText };
-  render();
+  scheduleRender();
 }
 
 function statusIndicatorMarkup() {
@@ -341,7 +343,7 @@ function applyRemoteAssignments(parsed, opts = {}) {
   }
   saveState(state);
   console.log("[Assignments] applied successfully. hasAnyTeamAssignments:", hasAnyTeamAssignments());
-  render();
+  scheduleRender();
 }
 
 function applyRemoteStationData(parsed) {
@@ -435,7 +437,7 @@ function applyRemoteStationData(parsed) {
         persistTeamStatusSyncPayload(state.activeTeamId);
       }
     }
-    render();
+    scheduleRender();
   }
 }
 
@@ -476,7 +478,7 @@ function applyRemoteTeamStatuses(teamStatuses) {
   });
   if (changed) {
     updateFinalUnlocked();
-    render();
+    scheduleRender();
   }
 }
 
@@ -673,6 +675,14 @@ function contactButtonMarkup(isBlock = false) {
   return `<a class="button secondary${blockClass}" href="tel:2036094570">Contact Austin</a>`;
 }
 
+function scheduleRender() {
+  if (renderRafId !== null) return;
+  renderRafId = requestAnimationFrame(() => {
+    renderRafId = null;
+    render();
+  });
+}
+
 function render() {
   updateFinalUnlocked();
   if (state.trivia.active) {
@@ -742,6 +752,9 @@ function renderHome() {
       </div>
       <div class="card">
         <button class="button secondary block" data-action="reset-game">Reset Game</button>
+      </div>
+      <div class="card comics-promo-card">
+        <a class="button secondary block comics-promo-link" href="./comics.html">Read with Noah - Curious Comics</a>
       </div>
     </section>
   `;
@@ -1602,16 +1615,30 @@ appEl.addEventListener("input", (event) => {
   }
 });
 
-appEl.addEventListener("blur", (event) => {
-  const target = event.target;
-  if (target.matches("[data-input='kid-name']") && currentScreen === "assignTeams" && instant?.persistAssignments) {
+appEl.addEventListener(
+  "blur",
+  (event) => {
+    const target = event.target;
+    if (
+      !target.matches("[data-input='kid-name']") ||
+      currentScreen !== "assignTeams" ||
+      !instant?.persistAssignments
+    ) {
+      return;
+    }
     const index = Number.parseInt(target.dataset.index, 10);
-    if (Number.isFinite(index)) {
+    const value = target.value;
+    if (!Number.isFinite(index)) return;
+    queueMicrotask(() => {
+      if (!document.documentElement.contains(target)) {
+        return;
+      }
       if (!Array.isArray(state.assignments.names)) state.assignments.names = [];
-      state.assignments.names[index] = target.value;
+      state.assignments.names[index] = value;
       saveState(state);
       lastPersistAssignmentsTime = Date.now();
       instant.persistAssignments(state.assignments.names, state.assignments.teams);
-    }
-  }
-}, true);
+    });
+  },
+  true
+);

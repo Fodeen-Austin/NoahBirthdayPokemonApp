@@ -1,15 +1,10 @@
 /**
- * InstantDB schema for Pokemon Park Quest.
- * Required for lookup() to work: unique attributes must be declared here and pushed.
- *
- * Push this schema once:
- *   npm install @instantdb/react   # or have it available
- *   echo "INSTANT_APP_ID=your-app-id" > .env   # use instantAppId from data/config.json
- *   npx instant-cli@latest push schema
+ * Shared InstantDB schema for Pokémon Park Quest + Curious Comics signup.
+ * Push with: npx instant-cli@latest push schema (see INSTANTDB_SCHEMA.md)
  */
-import { i } from "@instantdb/react";
+import { i } from "https://esm.sh/@instantdb/core";
 
-const _schema = i.schema({
+export const INSTANT_SCHEMA = i.schema({
   entities: {
     game_assignments: i.entity({
       slug: i.string().unique().indexed(),
@@ -57,10 +52,3 @@ const _schema = i.schema({
     }),
   },
 });
-
-type _AppSchema = typeof _schema;
-interface AppSchema extends _AppSchema {}
-const schema: AppSchema = _schema;
-
-export type { AppSchema };
-export default schema;

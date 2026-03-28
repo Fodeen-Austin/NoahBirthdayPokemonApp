@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Get the free comic — Read with Noah, Curious Comics. Subscribe for new issues and updates."
+    />
+    <title>Read with Noah — Curious Comics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles/comics.css" />
+  </head>
+  <body class="comics-body">
+    <a class="comics-skip" href="./index.html">Skip to game</a>
+    <a class="comics-back" href="./index.html" id="comics-back-label">← Back to Pokémon Park Quest</a>
+
+    <div class="comics-wrap" id="comics-root">
+      <header class="comics-header">
+        <div class="comics-logo-block">
+          <h1 class="comics-logo">
+            <span id="comics-logo-l1">READ WITH NOAH</span>
+            <span id="comics-logo-l2">CURIOUS COMICS</span>
+          </h1>
+          <p class="comics-tagline" id="comics-tagline">WHERE CURIOSITY POWERS EVERYTHING!</p>
+        </div>
+        <figure class="comics-hero-art is-empty">
+          <img id="comics-header-hero-img" alt="" width="800" height="600" />
+        </figure>
+      </header>
+
+      <section class="comics-hero-grid" aria-labelledby="comics-p-headline">
+        <div class="comics-product">
+          <h2 id="comics-product-title">Curio and the Internet Mystery</h2>
+          <p id="comics-product-sub">The Science Fair Signal — Issue #1</p>
+          <div class="comics-product-mock">
+            <img id="comics-product-img" src="" alt="" />
+            <span class="comics-product-fallback">Add a cover image path in comic-signup.json → heroGrid.productImage</span>
+          </div>
+        </div>
+
+        <div class="comics-form-card">
+          <h2 id="comics-p-headline">GET THE FREE COMIC!</h2>
+          <p class="comics-lead" id="comics-p-lead"></p>
+          <form id="comics-form-primary" class="comics-form" novalidate>
+            <div class="comics-field">
+              <label id="comics-p-label-child" for="comics-p-child">YOUR CHILD'S FIRST NAME:</label>
+              <input id="comics-p-child" name="childFirstName" type="text" required maxlength="80" />
+            </div>
+            <div class="comics-field">
+              <label id="comics-p-label-email" for="comics-p-email">YOUR BEST EMAIL:</label>
+              <input id="comics-p-email" name="parentEmail" type="email" required maxlength="120" />
+            </div>
+            <button type="submit" class="comics-cta" id="comics-p-submit">JOIN NOW!</button>
+            <p class="comics-disclaimer" id="comics-p-disclaimer"></p>
+            <div class="comics-form-status" role="status" aria-live="polite"></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="comics-mid-grid" aria-label="About the comic">
+        <article class="comics-panel">
+          <span class="comics-banner" id="comics-meet-banner">MEET THE HERO</span>
+          <h3 id="comics-meet-name">Noah</h3>
+          <p class="comics-role" id="comics-meet-role"></p>
+          <div id="comics-meet-bio"></div>
+          <div class="comics-panel-illu is-empty">
+            <img id="comics-meet-img" src="" alt="" />
+          </div>
+        </article>
+
+        <article class="comics-panel">
+          <span class="comics-banner" id="comics-author-banner">CREATED BY YOUR YOUNG AUTHOR</span>
+          <h3 id="comics-author-title">Written with Dad</h3>
+          <div id="comics-author-bio"></div>
+          <div class="comics-panel-illu is-empty">
+            <img id="comics-author-img" src="" alt="" />
+          </div>
+        </article>
+      </section>
+
+      <section class="comics-form-card comics-secondary-form" aria-labelledby="comics-s-headline">
+        <h2 id="comics-s-headline">GET THE FREE COMIC!</h2>
+        <p class="comics-lead" id="comics-s-lead"></p>
+        <form id="comics-form-secondary" class="comics-form" novalidate>
+          <div class="comics-field">
+            <label id="comics-s-label-child" for="comics-s-child">YOUR CHILD'S FIRST NAME:</label>
+            <input id="comics-s-child" name="childFirstName" type="text" required maxlength="80" />
+          </div>
+          <div class="comics-field">
+            <label id="comics-s-label-email" for="comics-s-email">YOUR BEST EMAIL:</label>
+            <input id="comics-s-email" name="parentEmail" type="email" required maxlength="120" />
+          </div>
+          <button type="submit" class="comics-cta" id="comics-s-submit">JOIN NOW!</button>
+          <p class="comics-disclaimer" id="comics-s-disclaimer"></p>
+          <div class="comics-form-status" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <footer class="comics-footer">
+        <span id="comics-footer-line">Join our adventure and see how curiosity can change the world!</span>
+        <span class="comics-footer-icon" id="comics-footer-icon" aria-hidden="true">👋</span>
+      </footer>
+    </div>
+
+    <script type="module" src="./scripts/comics-page.js"></script>
+  </body>
+</html>

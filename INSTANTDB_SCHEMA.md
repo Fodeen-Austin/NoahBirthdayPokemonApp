@@ -29,3 +29,18 @@ The app uses InstantDB `lookup()` so entity IDs are not plain strings. **Lookup 
    When prompted, confirm the schema changes.
 
 After a successful push, all devices can write and read assignments and station data; no code changes are required.
+
+## `comic_signups` (Curious Comics)
+
+The landing page `comics.html` creates rows in **`comic_signups`** with:
+
+| Field | Description |
+|-------|-------------|
+| `childFirstName` | Child’s first name |
+| `parentEmail` | Parent email |
+| `createdAt` | Unix ms timestamp |
+| `formSource` | `"primary"` or `"secondary"` (which form on the page) |
+
+Uses the same **`instantAppId`** as `data/config.json`. After adding this entity, run **`npx instant-cli@latest push schema`** again so InstantDB accepts writes.
+
+In the [InstantDB dashboard](https://instantdb.com/dash), enable **permissions** that allow clients to **`create`** `comic_signups` (e.g. public create for signups, or your preferred rule). Without create permission, the form will error after submit.

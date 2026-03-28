@@ -46,6 +46,16 @@ body {
   margin: 0 auto;
 }
 
+.comics-promo-card {
+  text-align: center;
+}
+
+.comics-promo-link {
+  text-decoration: none;
+  display: block;
+  box-sizing: border-box;
+}
+
 .step-grid {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
