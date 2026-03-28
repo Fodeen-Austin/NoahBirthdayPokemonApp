@@ -36,14 +36,28 @@ function setParagraphs(containerId, paragraphs) {
   el.innerHTML = paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
 }
 
+/** Align with scripts/app.js resolveImageUrl — correct for /comics.html and trailing-slash URLs. */
+function resolveComicAssetUrl(path) {
+  if (!path || typeof path !== "string") return "";
+  const cleaned = path.trim();
+  if (/^https?:\/\//i.test(cleaned)) return cleaned;
+  const relativePath = cleaned.replace(/^\.?\//, "");
+  if (relativePath.startsWith("/")) {
+    return `${window.location.origin}${relativePath}`;
+  }
+  const pathname = window.location.pathname || "/";
+  const docDir = pathname.endsWith("/") ? pathname : pathname.replace(/\/[^/]*$/, "/");
+  const base = window.location.origin + docDir;
+  return new URL(relativePath, base).href;
+}
+
 function wireImage(imgId, wrapSelector, url, alt) {
   const img = document.getElementById(imgId);
   const wrap = img?.closest(wrapSelector);
   if (!img) return;
   const hasUrl = Boolean(url && String(url).trim());
   if (hasUrl) {
-    const path = String(url).replace(/^\.\//, "");
-    img.src = new URL(path, window.location.href).href;
+    img.src = resolveComicAssetUrl(String(url).trim());
     img.alt = alt || "";
     if (wrap) wrap.classList.remove("is-empty");
   } else {
