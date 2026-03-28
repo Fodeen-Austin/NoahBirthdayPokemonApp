@@ -4,7 +4,7 @@
  * Forms submit only on button click (no per-keystroke writes).
  */
 
-import { init, id } from "https://esm.sh/@instantdb/core";
+import { init as initInstantDb, id } from "https://esm.sh/@instantdb/core";
 import { INSTANT_SCHEMA } from "./instant-schema.js";
 
 function escapeHtml(s) {
@@ -50,7 +50,7 @@ async function waitForInstantAuthenticated(db, timeoutMs = 20000) {
 function getSignupDb(appId) {
   if (!appId || typeof appId !== "string") return null;
   if (!signupDb) {
-    signupDb = init({ appId, schema: INSTANT_SCHEMA, verbose: false });
+    signupDb = initInstantDb({ appId, schema: INSTANT_SCHEMA, verbose: false });
     if (signupDb && typeof signupDb.on === "function") {
       signupDb.on("error", (err) => {
         console.warn("[Curious Comics] InstantDB:", err?.message ?? err);
