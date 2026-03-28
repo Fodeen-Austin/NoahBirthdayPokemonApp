@@ -67,6 +67,16 @@ async function init() {
     `;
     return;
   }
+  try {
+    if (new URLSearchParams(window.location.search).has("resetLocal")) {
+      clearState();
+      const u = new URL(window.location.href);
+      u.searchParams.delete("resetLocal");
+      window.history.replaceState({}, "", u.pathname + u.search + u.hash);
+    }
+  } catch (_) {
+    /* ignore */
+  }
   state = normalizeState(
     loadState() || buildInitialState(appData.teams, appData.stations, appData.config),
     appData.teams,
@@ -96,7 +106,10 @@ async function init() {
     applyRemoteAssignments
   );
   if (typeof instant.fetchAssignmentsOnce === "function") {
-    const remote = await instant.fetchAssignmentsOnce();
+    const remote = await Promise.race([
+      instant.fetchAssignmentsOnce(),
+      new Promise((resolve) => setTimeout(() => resolve(null), 8000)),
+    ]);
     const namesCount = Array.isArray(remote?.names) ? remote.names.length : 0;
     const teamsSummary = remote?.teams && typeof remote.teams === "object"
       ? Object.fromEntries(Object.entries(remote.teams).map(([k, v]) => [k, Array.isArray(v) ? v.length : 0]))
@@ -190,6 +203,10 @@ function normalizeState(loadedState, teams, config, stations) {
   if (schemaVersion < 2) {
     return buildInitialState(teams, stations, config);
   }
+  if (!Array.isArray(loadedState?.teams)) {
+    return buildInitialState(teams, stations, config);
+  }
+  const validStationId = new Set(STATION_IDS);
   const normalized = { ...loadedState };
   normalized.schemaVersion = 2;
   normalized.maxStations = stations?.length ?? 5;
@@ -201,24 +218,33 @@ function normalizeState(loadedState, teams, config, stations) {
   });
   normalized.stationOccupancy = stationOccupancy;
   normalized.teams = teams.map((team, index) => {
-    const existing = loadedState.teams?.find((t) => t.id === team.id) ?? loadedState.teams?.[index];
+    const existing = loadedState.teams.find((t) => t.id === team.id) ?? loadedState.teams[index];
     const completedStationIds = Array.isArray(existing?.completedStationIds)
-      ? existing.completedStationIds
+      ? existing.completedStationIds.filter((id) => validStationId.has(id))
       : [];
     const completed = completedStationIds.length >= (normalized.maxStations ?? 5);
     const stationPokemonChoices =
       existing?.stationPokemonChoices && typeof existing.stationPokemonChoices === "object"
-        ? existing.stationPokemonChoices
+        ? Object.fromEntries(
+            Object.entries(existing.stationPokemonChoices).filter(([sid]) => validStationId.has(sid))
+          )
         : {};
+    let currentStationId = existing?.currentStationId ?? null;
+    if (currentStationId && !validStationId.has(currentStationId)) {
+      currentStationId = null;
+    }
     return {
       id: team.id,
       name: team.name,
       completedStationIds,
-      currentStationId: existing?.currentStationId ?? null,
+      currentStationId,
       completed,
       stationPokemonChoices,
     };
   });
+  if (normalized.activeTeamId != null && !teams.some((t) => t.id === normalized.activeTeamId)) {
+    normalized.activeTeamId = null;
+  }
   if (normalized.initialStationOrder == null) {
     normalized.initialStationOrder = null;
   }

@@ -91,7 +91,6 @@ function seedStationOccupancy() {
 /** Create entities with id() if they don't exist so lookup().update() can be used. Run once after init. */
 async function ensureSeedEntities(teams) {
   if (!db || typeof db.queryOnce !== "function" || seedEntitiesEnsured) return;
-  seedEntitiesEnsured = true;
   const teamIds = Array.isArray(teams) && teams.length ? teams.map((t) => t.id) : ["red", "blue", "green", "yellow"];
   const txs = [];
   try {
@@ -154,9 +153,9 @@ async function ensureSeedEntities(teams) {
       }));
     }
     if (txs.length) db.transact(txs);
+    seedEntitiesEnsured = true;
   } catch (e) {
     console.warn("[InstantDB] ensureSeedEntities:", e);
-    seedEntitiesEnsured = false;
   }
 }
 
@@ -244,7 +243,19 @@ export async function initInstant(appId, teams, onRemoteUpdate, onStatus, onRemo
       if (err?.hint) console.warn("[InstantDB] hint:", err.hint);
     });
   }
-  await ensureSeedEntities(teams);
+  try {
+    await Promise.race([
+      ensureSeedEntities(teams),
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("InstantDB seed timed out (network/Safari); continuing with subscriptions")),
+          12000
+        )
+      ),
+    ]);
+  } catch (e) {
+    console.warn("[InstantDB]", e?.message || e);
+  }
 
   if (!assignmentsSubscribed && typeof onRemoteAssignments === "function") {
     db.subscribeQuery({ game_assignments: {} }, (resp) => {
