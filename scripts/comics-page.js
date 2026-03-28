@@ -245,7 +245,10 @@ async function init() {
   let config;
   let appConfig;
   try {
-    const [comicRes, cfgRes] = await Promise.all([fetch(comicUrl), fetch(configUrl)]);
+    const [comicRes, cfgRes] = await Promise.all([
+      fetch(comicUrl, { cache: "no-store" }),
+      fetch(configUrl, { cache: "no-store" }),
+    ]);
     if (!comicRes.ok) throw new Error(`comic-signup.json ${comicRes.status}`);
     if (!cfgRes.ok) throw new Error(`config.json ${cfgRes.status}`);
     config = await comicRes.json();
@@ -271,7 +274,15 @@ async function init() {
   setText("comics-logo-l1", h.logoLine1);
   setText("comics-logo-l2", h.logoLine2);
   setText("comics-tagline", h.taglineBanner);
-  wireImage("comics-header-hero-img", ".comics-hero-art", h.heroImage, h.heroImageAlt);
+  const topBanner =
+    h.topBannerImage || h.headerStripImage || "";
+  const topBannerAlt = h.topBannerAlt || h.headerStripAlt || "";
+  wireImage("comics-top-banner-img", ".comics-top-banner", topBanner, topBannerAlt);
+  const bannerBleed = document.querySelector(".comics-top-banner-bleed");
+  const bannerFig = document.getElementById("comics-top-banner-img")?.closest(".comics-top-banner");
+  if (bannerBleed) {
+    bannerBleed.classList.toggle("is-hidden", Boolean(bannerFig?.classList.contains("is-empty")));
+  }
 
   const g = config.heroGrid || {};
   setText("comics-product-title", g.productCaption);

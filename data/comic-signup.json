@@ -6,51 +6,51 @@
     "logoLine1": "READ WITH NOAH",
     "logoLine2": "CURIOUS COMICS",
     "taglineBanner": "WHERE CURIOSITY POWERS EVERYTHING!",
-    "heroImage": "./assets/comics-landing-hero.png",
-    "heroImageAlt": "Noah and Pixel the robot owl — comic adventure art"
+    "topBannerImage": "./assets/header.png",
+    "topBannerAlt": "Read with Noah — Curious Comics header art"
   },
   "heroGrid": {
     "productCaption": "Curio and the Internet Mystery",
     "productSubcaption": "The Science Fair Signal — Issue #1",
-    "productImage": "",
+    "productImage": "./assets/issue-1-cover.png",
     "productImageAlt": "Comic book cover preview"
   },
   "formPrimary": {
     "headline": "GET THE FREE COMIC!",
-    "description": "Join the mailing list for new issues, bonus panels, and behind-the-scenes from Noah's workshop.",
+    "description": "Join the mailing list for new issues and behind-the-scenes from Noah's workshop.",
     "childNameLabel": "YOUR CHILD'S FIRST NAME:",
-    "emailLabel": "YOUR BEST EMAIL:",
+    "emailLabel": "PARENTS/GUARDIANS EMAIL:",
     "childPlaceholder": "First Name",
     "emailPlaceholder": "Email Address",
     "buttonText": "JOIN NOW!",
     "disclaimer": "We respect your inbox. Unsubscribe anytime. For grown-ups only — please use a parent email."
   },
   "meetHero": {
-    "banner": "MEET THE HERO",
-    "name": "Noah",
+    "banner": "MEET ROCCO",
+    "name": "Rocco Thames",
     "roleLine": "Kid inventor · storyteller · curiosity champion",
     "bioParagraphs": [
-      "Noah is the star of Curious Comics — always asking \"what if?\" and turning everyday mysteries into epic adventures.",
+      "Rocco is the star of Curious Comics — always asking \"what if?\" and turning everyday mysteries into epic adventures.",
       "When he's not sketching the next cliffhanger, you'll find him building gadgets, reading everything he can find, and making sure Pixel doesn't get into too much trouble."
     ],
-    "image": "",
-    "imageAlt": "Noah character illustration"
+    "image": "./assets/meet-rocco.png",
+    "imageAlt": "Rocco — Curious Comics hero"
   },
   "author": {
     "banner": "CREATED BY YOUR YOUNG AUTHOR",
-    "title": "Written with Dad",
+    "title": "With Mom & Dad",
     "bioParagraphs": [
-      "Noah (9) writes the stories; Dad helps with layouts, lettering, and keeping the science fair villains scientifically plausible.",
+      "Noah writes the stories; his mom and dad help with layouts, lettering, and keeping the villains honest.",
       "Every issue is a family lab project — part bedtime story, part STEM spark."
     ],
     "image": "",
-    "imageAlt": "Noah and Dad at the drawing desk"
+    "imageAlt": ""
   },
   "formSecondary": {
     "headline": "GET THE FREE COMIC!",
     "description": "Same list — drop your details again if you're on mobile and missed the first box!",
     "childNameLabel": "YOUR CHILD'S FIRST NAME:",
-    "emailLabel": "YOUR BEST EMAIL:",
+    "emailLabel": "PARENTS/GUARDIANS EMAIL:",
     "childPlaceholder": "First Name",
     "emailPlaceholder": "Email Address",
     "buttonText": "JOIN NOW!",
