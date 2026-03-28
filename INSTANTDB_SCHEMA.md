@@ -44,3 +44,22 @@ The landing page `comics.html` creates rows in **`comic_signups`** with:
 Uses the same **`instantAppId`** as `data/config.json`. After adding this entity, run **`npx instant-cli@latest push schema`** again so InstantDB accepts writes.
 
 In the [InstantDB dashboard](https://instantdb.com/dash), enable **permissions** that allow clients to **`create`** `comic_signups` (e.g. public create for signups, or your preferred rule). Without create permission, the form will error after submit.
+
+Example for the `comic_signups` namespace:
+
+```json
+{
+  "comic_signups": {
+    "allow": {
+      "view": "false",
+      "create": "true",
+      "update": "false",
+      "delete": "false"
+    }
+  }
+}
+```
+
+If a global `$default` rule denies `create`, you must still allow **`create`** on `comic_signups` explicitly.
+
+The comics page **waits** until the client is **`authenticated`**, then **awaits** `db.transact(...)` and only treats the submit as success when the transaction **`synced`**s to the server, so queued or failed writes surface as errors instead of a false success message.

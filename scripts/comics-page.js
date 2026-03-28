@@ -17,10 +17,46 @@ function escapeHtml(s) {
 
 let signupDb = null;
 
+/** Instant resolves transact as ok for `enqueued` (not yet on server); wait for auth first, then require `synced`. */
+function isInstantAuthenticated(db) {
+  return db?._reactor?.status === "authenticated";
+}
+
+async function waitForInstantAuthenticated(db, timeoutMs = 20000) {
+  if (!db || typeof db.subscribeConnectionStatus !== "function") {
+    throw new Error("InstantDB client is not ready.");
+  }
+  if (isInstantAuthenticated(db)) return;
+  await new Promise((resolve, reject) => {
+    let unsub = () => {};
+    const timer = setTimeout(() => {
+      unsub();
+      reject(
+        new Error(
+          "Could not connect to InstantDB. Check your network and that the app ID is correct."
+        )
+      );
+    }, timeoutMs);
+    unsub = db.subscribeConnectionStatus((status) => {
+      if (status === "authenticated") {
+        clearTimeout(timer);
+        unsub();
+        resolve();
+      }
+    });
+  });
+}
+
 function getSignupDb(appId) {
   if (!appId || typeof appId !== "string") return null;
   if (!signupDb) {
     signupDb = init({ appId, schema: INSTANT_SCHEMA, verbose: false });
+    if (signupDb && typeof signupDb.on === "function") {
+      signupDb.on("error", (err) => {
+        console.warn("[Curious Comics] InstantDB:", err?.message ?? err);
+        if (err?.hint) console.warn("[Curious Comics] hint:", err.hint);
+      });
+    }
   }
   return signupDb;
 }
@@ -153,7 +189,8 @@ async function handleComicFormSubmit(event, comicConfig, appConfig) {
     if (appId) {
       const db = getSignupDb(appId);
       if (!db) throw new Error("InstantDB init failed");
-      db.transact(
+      await waitForInstantAuthenticated(db, 20000);
+      const result = await db.transact(
         db.tx.comic_signups[id()].create({
           childFirstName: childName,
           parentEmail: email,
@@ -161,6 +198,14 @@ async function handleComicFormSubmit(event, comicConfig, appConfig) {
           formSource: form.id === "comics-form-primary" ? "primary" : "secondary",
         })
       );
+      if (!result || result.status !== "synced") {
+        const st = result?.status ?? "unknown";
+        throw new Error(
+          st === "enqueued"
+            ? "Still connecting — try again in a moment."
+            : `Save did not finish (${st}).`
+        );
+      }
       if (endpoint) {
         try {
           await postToExternalEndpoint(endpoint, method, form, childName, email);
@@ -184,7 +229,11 @@ async function handleComicFormSubmit(event, comicConfig, appConfig) {
     }
   } catch (e) {
     console.warn("Comic signup failed:", e);
-    showFormStatus(form, "err", unavailableMessage);
+    const hint =
+      e && String(e.message || e).toLowerCase().includes("permission")
+        ? " Check InstantDB → Permissions: allow create on comic_signups."
+        : "";
+    showFormStatus(form, "err", `${unavailableMessage}${hint}`);
   } finally {
     if (submitBtn) submitBtn.disabled = false;
   }
